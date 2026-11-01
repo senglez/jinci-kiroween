@@ -8,6 +8,8 @@ import { Sound } from './audio.js';
 import { Puzzle } from './puzzle.js';
 import { createProgressStore } from './bonus/progress.js';
 import { BonusLevel } from './bonus/level.js';
+import { GalleryViewer } from './gallery.js';
+import { GALLERY, SEASONS } from './gallery-data.js';
 
 const $ = (sel) => document.querySelector(sel);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -44,6 +46,25 @@ function renderTexts() {
   $('#btn-lang').textContent = lang === 'zh' ? 'EN' : '中文';
   if (currentMilestone) fillCard(currentMilestone);
   renderCredits();
+  gallery?.renderTexts();
+}
+
+// ---------- 晋祠美景 gallery ----------
+let gallery = null;
+function setupGallery() {
+  gallery = new GalleryViewer({
+    items: GALLERY,
+    seasons: SEASONS,
+    t: (entry) => t(entry),
+    labels: { prev: UI.galleryPrev, next: UI.galleryNext, close: UI.close },
+    els: {
+      dialog: $('#gallery'), img: $('#gallery-img'), caption: $('#gallery-caption'), season: $('#gallery-season'),
+      counter: $('#gallery-counter'), credit: $('#gallery-credit'), prev: $('#btn-gallery-prev'),
+      next: $('#btn-gallery-next'), close: $('#btn-gallery-close'), tabs: $('#gallery-tabs'), frame: $('#gallery-frame'),
+    },
+  });
+  $('#btn-gallery').addEventListener('click', (e) => gallery.open(e.currentTarget));
+  window.__jinciGallery = gallery; // for automated play-tests
 }
 $('#btn-lang').addEventListener('click', () => {
   lang = lang === 'zh' ? 'en' : 'zh';
@@ -364,5 +385,6 @@ $('#btn-start').addEventListener('click', () => {
   run();
 });
 
+setupGallery();
 renderTexts();
 $('#scene-title').classList.add('visible');

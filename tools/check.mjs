@@ -86,6 +86,28 @@ if (!errors.length) {
   }
 }
 
+// 7. 晋祠美景 gallery: files exist, credited, bilingual, ≥ 5 per season (spec: jinci-gallery)
+if (!errors.length) {
+  const { GALLERY, SEASONS } = await import(join(root, 'js', 'gallery-data.js'));
+  const { CREDITS } = await import(join(root, 'js', 'credits.js'));
+  const credited = new Set(CREDITS.map((c) => c.file));
+  for (const p of GALLERY) {
+    try { await access(join(root, p.file)); } catch { fail(`${p.file}: gallery photo missing`); }
+    if (!credited.has(p.file)) fail(`${p.file}: gallery photo has no credit`);
+    if (!p.caption?.zh?.trim() || !p.caption?.en?.trim()) fail(`${p.file}: caption needs zh and en`);
+    if (!p.author || !p.license || !p.source) fail(`${p.file}: missing author, licence, or source`);
+    const m = Number((p.date || '').slice(5, 7));
+    const expected = m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter';
+    if (p.season !== expected) fail(`${p.file}: season "${p.season}" does not match shooting date ${p.date}`);
+  }
+  for (const s of SEASONS) {
+    const n = GALLERY.filter((p) => p.season === s.id).length;
+    if (n < 5) fail(`gallery: only ${n} ${s.id} photos (need ≥ 5)`);
+  }
+  const order = GALLERY.map((p) => SEASONS.findIndex((s) => s.id === p.season));
+  if (order.some((v, i) => i && v < order[i - 1])) fail('gallery: photos must be in spring → winter order');
+}
+
 // 6. vendored hand tracker (see vendor/mediapipe/README.md)
 const VENDORED = [
   ['vendor/mediapipe/vision_bundle.mjs', 100_000],

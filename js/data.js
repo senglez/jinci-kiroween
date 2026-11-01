@@ -192,6 +192,11 @@ export const UI = {
   close: { zh: '关闭', en: 'Close' },
   sound: { zh: '声音', en: 'Sound' },
 
+  // ---------- 晋祠美景 gallery (spec: jinci-gallery) ----------
+  gallery: { zh: '晋祠美景', en: 'Jinci in four seasons' },
+  galleryPrev: { zh: '上一张', en: 'Previous photo' },
+  galleryNext: { zh: '下一张', en: 'Next photo' },
+
   // ---------- hidden level 鬼手营造 (spec: gesture-bonus-level) ----------
   bonusUnlocked: { zh: '隐藏关卡已解锁：鬼手营造', en: 'Hidden level unlocked: Ghost-Hand Builder' },
   bonusUnlockedText: {

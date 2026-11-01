@@ -118,5 +118,197 @@
   "author": "Google / The MediaPipe Authors",
   "license": "Apache-2.0",
   "license_url": "https://www.apache.org/licenses/LICENSE-2.0"
+ },
+ {
+  "file": "assets/gallery/spring-1.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E5%A4%95%E9%98%B3%E4%B8%8B%E7%9A%84%E6%99%8B%E7%A5%A0%E5%9C%A3%E6%AF%8D%E6%AE%BF.jpg",
+  "title": "File:夕阳下的晋祠圣母殿.jpg",
+  "author": "Patrick20242023",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/spring-2.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E6%99%B4%E5%A4%A9%E4%B8%8B%E7%9A%84%E6%99%8B%E7%A5%A0%E5%9C%A3%E6%AF%8D%E6%AE%BF.jpg",
+  "title": "File:晴天下的晋祠圣母殿.jpg",
+  "author": "Patrick20242023",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/spring-3.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E6%99%8B%E7%A5%A0%E5%9C%A3%E6%AF%8D%E6%AE%BF%E4%BE%A7%E9%9D%A2.jpg",
+  "title": "File:晋祠圣母殿侧面.jpg",
+  "author": "Patrick20242023",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/spring-4.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E6%99%8B%E7%A5%A0%E5%9C%A3%E6%AF%8D%E6%AE%BF%E5%89%8D%E7%9A%84%E9%B1%BC%E6%B2%BC%E9%A3%9E%E6%A2%81.jpg",
+  "title": "File:晋祠圣母殿前的鱼沼飞梁.jpg",
+  "author": "Patrick20242023",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/spring-5.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E6%99%8B%E7%A5%A0%E5%AF%B9%E8%B6%8A%E5%9D%8A.jpg",
+  "title": "File:晋祠对越坊.jpg",
+  "author": "Patrick20242023",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/spring-6.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E6%99%8B%E7%A5%A0%E6%B0%B4%E9%95%9C%E5%8F%B0%E6%AD%A3%E9%9D%A2.jpg",
+  "title": "File:晋祠水镜台正面.jpg",
+  "author": "Patrick20242023",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/summer-1.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:20250602_Jinci_Bowuguan_(145427).jpg",
+  "title": "File:20250602 Jinci Bowuguan (145427).jpg",
+  "author": "Yumeto",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/summer-2.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:20250602_Jinci_Bowuguan_(151554).jpg",
+  "title": "File:20250602 Jinci Bowuguan (151554).jpg",
+  "author": "Yumeto",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/summer-3.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:20250602_Jinci_Bowuguan_(154549).jpg",
+  "title": "File:20250602 Jinci Bowuguan (154549).jpg",
+  "author": "Yumeto",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/summer-4.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:The_altar_of_the_burnt_offering_Taiyuan.jpg",
+  "title": "File:The altar of the burnt offering Taiyuan.jpg",
+  "author": "xin",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/summer-5.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:20250602_Jinci_Bowuguan_(144954).jpg",
+  "title": "File:20250602 Jinci Bowuguan (144954).jpg",
+  "author": "Yumeto",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/summer-6.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E6%99%8B%E7%A5%A0%E5%8F%A4%E5%BB%BA%E7%AD%91%E4%B9%8B%E4%B8%80.JPG",
+  "title": "File:晋祠古建筑之一.JPG",
+  "author": "Duan Xuanwang",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
+ },
+ {
+  "file": "assets/gallery/autumn-1.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B1%B1%E8%A5%BF%E5%A4%AA%E5%8E%9F%E5%8F%A4%E8%B9%9FB279.jpg",
+  "title": "File:中國山西太原古蹟B279.jpg",
+  "author": "林高志",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/autumn-2.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B1%B1%E8%A5%BF%E5%A4%AA%E5%8E%9F%E5%8F%A4%E8%B9%9FB293.jpg",
+  "title": "File:中國山西太原古蹟B293.jpg",
+  "author": "林高志",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/autumn-3.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B1%B1%E8%A5%BF%E5%A4%AA%E5%8E%9F%E5%8F%A4%E8%B9%9FB374.jpg",
+  "title": "File:中國山西太原古蹟B374.jpg",
+  "author": "林高志",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/autumn-4.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B1%B1%E8%A5%BF%E5%A4%AA%E5%8E%9F%E5%8F%A4%E8%B9%9FB398.jpg",
+  "title": "File:中國山西太原古蹟B398.jpg",
+  "author": "林高志",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/autumn-5.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B1%B1%E8%A5%BF%E5%A4%AA%E5%8E%9F%E5%8F%A4%E8%B9%9FB403.jpg",
+  "title": "File:中國山西太原古蹟B403.jpg",
+  "author": "林高志",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/autumn-6.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9C%8B%E5%B1%B1%E8%A5%BF%E5%A4%AA%E5%8E%9F%E5%8F%A4%E8%B9%9FC54.jpg",
+  "title": "File:中國山西太原古蹟C54.jpg",
+  "author": "林高志",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0"
+ },
+ {
+  "file": "assets/gallery/winter-1.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E5%A4%AA%E5%8E%9F_%E6%99%89%E7%A5%A0_IMG_2278_(12715166123).jpg",
+  "title": "File:太原 晉祠 IMG 2278 (12715166123).jpg",
+  "author": "Ann Lee",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0"
+ },
+ {
+  "file": "assets/gallery/winter-2.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E5%A4%AA%E5%8E%9F_%E6%99%89%E7%A5%A0_IMG_2284_(12715354414).jpg",
+  "title": "File:太原 晉祠 IMG 2284 (12715354414).jpg",
+  "author": "Ann Lee",
+  "license": "CC BY-SA 2.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.0"
+ },
+ {
+  "file": "assets/gallery/winter-3.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:%E8%88%8D%E5%88%A9%E7%94%9F%E7%94%9F%E5%A1%94_-_49222850677.jpg",
+  "title": "File:舍利生生塔 - 49222850677.jpg",
+  "author": "xiquinhosilva",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0"
+ },
+ {
+  "file": "assets/gallery/winter-4.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:74036-Taiyuan_(49222818237).jpg",
+  "title": "File:74036-Taiyuan (49222818237).jpg",
+  "author": "xiquinhosilva",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0"
+ },
+ {
+  "file": "assets/gallery/winter-5.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:74162-Taiyuan_(49222144918).jpg",
+  "title": "File:74162-Taiyuan (49222144918).jpg",
+  "author": "xiquinhosilva",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0"
+ },
+ {
+  "file": "assets/gallery/winter-6.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Jinci_Temple_74049-Taiyuan_(49222172813).jpg",
+  "title": "File:Jinci Temple 74049-Taiyuan (49222172813).jpg",
+  "author": "xiquinhosilva",
+  "license": "CC BY 2.0",
+  "license_url": "https://creativecommons.org/licenses/by/2.0"
  }
 ]

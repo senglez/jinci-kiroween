@@ -25,6 +25,7 @@
   <nav class="controls">
     <button id="btn-lang" type="button" aria-label="Switch language">EN</button>
     <button id="btn-sound" type="button" aria-pressed="true"><span data-i18n="sound"></span> ♪</button>
+    <button id="btn-gallery" type="button" data-i18n="gallery"></button>
     <button id="btn-credits" type="button" data-i18n="credits"></button>
   </nav>
 
@@ -172,6 +173,25 @@
         <button id="btn-bonus-again" class="btn-primary btn-ghostly" type="button" data-i18n="bonusAgain"></button>
         <button id="btn-bonus-title" class="btn-ghost" type="button" data-i18n="toTitle"></button>
       </div>
+    </div>
+  </div>
+
+  <!-- 晋祠美景 seasonal gallery -->
+  <div id="gallery" class="modal" role="dialog" aria-modal="true" aria-labelledby="gallery-title" hidden>
+    <div class="modal-box gallery-box">
+      <div class="gallery-head">
+        <h2 id="gallery-title" data-i18n="gallery"></h2>
+        <button id="btn-gallery-close" class="btn-ghost gallery-close" type="button">×</button>
+      </div>
+      <div id="gallery-tabs" class="gallery-tabs" role="group" aria-label="Seasons"></div>
+      <div id="gallery-frame" class="gallery-frame loading">
+        <button id="btn-gallery-prev" class="gallery-nav prev" type="button">‹</button>
+        <img id="gallery-img" alt="" draggable="false">
+        <button id="btn-gallery-next" class="gallery-nav next" type="button">›</button>
+      </div>
+      <p class="gallery-meta"><span id="gallery-season"></span> <span id="gallery-counter" class="gallery-counter"></span></p>
+      <p id="gallery-caption" class="gallery-caption"></p>
+      <p class="gallery-credit"><a id="gallery-credit" target="_blank" rel="noopener"></a> · Wikimedia Commons</p>
     </div>
   </div>
 

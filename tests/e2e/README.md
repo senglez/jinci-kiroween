@@ -8,6 +8,7 @@ Each file is a single `async (page) => { … }` function, the format accepted by
 | `scatter.js` | 10.2 | Two scatters differ; every piece lies inside its tray cell, landscape and portrait |
 | `unlock.js` | 10.3 | Fast first win unlocks and survives reload; slow first win keeps it locked forever |
 | `gesture-flow.js` | 10.4 | Tutorial, empty grab, rejected drop, hand lost, full build, bonus win, Escape, mouse disabled |
+| `gallery.js` | gallery 3.2 | No download before opening; opens on the current season; paging wraps; keys, swipe, tabs; Escape and focus; portrait fit; English; hidden in bonus mode |
 | `camera-denied.js` | 10.5 | Without a usable camera only "返回" is offered and the camera stays off |
 
 Set `ROOT` at the top of each file to your checkout path if it is not `/projects/sandbox/repo-jinci`.

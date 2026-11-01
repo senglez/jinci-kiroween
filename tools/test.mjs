@@ -6,6 +6,7 @@
 import { afterCompletion, createProgressStore, EMPTY_PROGRESS, parseProgress, STORAGE_KEY, UNLOCK_MS } from '../js/bonus/progress.js';
 import { GRAB_RATIO, mapToUnit, OneEuro, PinchMachine, RELEASE_RATIO, STEADY_FRAMES } from '../js/bonus/gesture.js';
 import { MAX_TILT, sameOrder, scatterLayout, shuffle } from '../js/scatter.js';
+import { firstOfSeason, seasonForMonth, wrap } from '../js/gallery.js';
 
 // ---------- harness ----------
 
@@ -231,6 +232,25 @@ example('P10 sanity: the same test rejects the old random-comparator shuffle', (
   const rng = seeded(2026);
   const chi = worstChi2(() => PIECE_IDS.slice().sort(() => rng() - 0.5));
   assert(chi >= CHI2_CRITICAL_DF8_P001, `old shuffle unexpectedly passed (chi-square ${chi.toFixed(1)})`);
+});
+
+// ---------- gallery paging (spec: jinci-gallery) ----------
+
+property('G1 wrap stays in range and next-then-prev returns to the start', 3000,
+  (rng) => ({ i: int(rng, -1000, 1000), n: int(rng, 1, 50), k: int(rng, 0, 120) }),
+  ({ i, n, k }) => {
+    const w = wrap(i, n);
+    let j = w;
+    for (let s = 0; s < k; s++) j = wrap(j + 1, n);
+    for (let s = 0; s < k; s++) j = wrap(j - 1, n);
+    return Number.isInteger(w) && w >= 0 && w < n && j === w && wrap(w + n, n) === w;
+  });
+
+example('G2 every month maps to its season (Mar–May spring … Dec–Feb winter)', () => {
+  const want = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'autumn', 'autumn', 'autumn', 'winter'];
+  want.forEach((s, i) => assert(seasonForMonth(i + 1) === s, `month ${i + 1} → ${seasonForMonth(i + 1)}`));
+  const items = [{ season: 'spring' }, { season: 'spring' }, { season: 'summer' }];
+  assert(firstOfSeason(items, 'summer') === 2 && firstOfSeason(items, 'winter') === -1, 'firstOfSeason');
 });
 
 // ---------- report ----------
