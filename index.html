@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>夜穿千年 · 晋祠圣母殿 | Kiroween 2026</title>
+  <meta name="description" content="A Halloween-themed history game: travel back a thousand years and rebuild the Song-dynasty Hall of the Holy Mother at Jinci, Taiyuan.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏮</text></svg>">
+</head>
+<body>
+  <!-- night sky shared by every scene -->
+  <div id="sky" aria-hidden="true">
+    <div class="moon"></div>
+    <div class="stars"></div>
+    <div id="bats"></div>
+    <div class="fog fog-1"></div>
+    <div class="fog fog-2"></div>
+  </div>
+  <canvas id="warp" aria-hidden="true"></canvas>
+
+  <nav class="controls">
+    <button id="btn-lang" type="button" aria-label="Switch language">EN</button>
+    <button id="btn-sound" type="button" aria-pressed="true"><span data-i18n="sound"></span> ♪</button>
+    <button id="btn-credits" type="button" data-i18n="credits"></button>
+  </nav>
+
+  <!-- 1. title -->
+  <section id="scene-title" class="scene active">
+    <div class="title-wrap">
+      <div class="title-lantern" aria-hidden="true"></div>
+      <h1 data-i18n="title"></h1>
+      <p class="subtitle" data-i18n="subtitle"></p>
+      <button id="btn-start" class="btn-primary" type="button" data-i18n="start"></button>
+    </div>
+  </section>
+
+  <!-- 2. first-person time travel -->
+  <section id="scene-travel" class="scene" aria-live="polite">
+    <div class="year-wrap">
+      <div id="year" class="year">2026</div>
+    </div>
+    <article id="card" class="card">
+      <h2 id="card-era"></h2>
+      <p id="card-text"></p>
+      <figure id="card-figure" hidden>
+        <img id="card-img" alt="">
+        <figcaption id="card-caption"></figcaption>
+      </figure>
+    </article>
+    <button id="btn-skip" class="btn-ghost" type="button" data-i18n="skip"></button>
+  </section>
+
+  <!-- 3. arrive: today's hall -->
+  <section id="scene-reveal" class="scene">
+    <div class="reveal-photo">
+      <img src="assets/photos/hall-front.jpg" alt="晋祠圣母殿正面 Front of the Hall of the Holy Mother">
+    </div>
+    <p class="reveal-text" data-i18n="arrive"></p>
+    <p class="photo-credit">Photo: 林高志, CC BY-SA 4.0, Wikimedia Commons</p>
+  </section>
+
+  <!-- 4. the puzzle -->
+  <section id="scene-game" class="scene">
+    <header class="hud">
+      <div class="hud-goal" data-i18n="goal"></div>
+      <div class="hud-stats">
+        <span id="progress">0 / 9</span>
+        <span id="timer">00:00</span>
+        <button id="btn-hint" class="btn-ghost" type="button" data-i18n="hint"></button>
+      </div>
+    </header>
+    <svg id="stage" role="application" aria-label="圣母殿拼装 Hall puzzle"></svg>
+    <div id="toast" class="toast" role="status"></div>
+    <aside id="fact" class="fact" role="status">
+      <h3 id="fact-title"></h3>
+      <p id="fact-text"></p>
+    </aside>
+  </section>
+
+  <canvas id="embers" aria-hidden="true"></canvas>
+  <div id="flash" aria-hidden="true"></div>
+
+  <!-- success -->
+  <div id="win" class="modal" role="dialog" aria-modal="true" aria-labelledby="win-title" hidden>
+    <div class="modal-box">
+      <div class="title-lantern win-lantern" aria-hidden="true"></div>
+      <h2 id="win-title" data-i18n="winTitle"></h2>
+      <p data-i18n="winText"></p>
+      <p class="win-stats"><span data-i18n="time"></span> <b id="win-time"></b> · <span data-i18n="moves"></span> <b id="win-moves"></b></p>
+      <div class="win-gallery">
+        <img src="assets/photos/dragon-column.jpg" alt="盘龙柱 dragon column">
+        <img src="assets/photos/dougong.jpg" alt="斗拱 brackets">
+        <img src="assets/photos/fish-pond-bridge.jpg" alt="鱼沼飞梁 Flying Bridge">
+        <img src="assets/photos/guide1932-map.jpg" alt="1932 晋祠全图 map">
+      </div>
+      <div class="modal-actions">
+        <button id="btn-again" class="btn-primary" type="button" data-i18n="again"></button>
+        <button class="btn-ghost js-open-credits" type="button" data-i18n="credits"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- credits -->
+  <div id="credits" class="modal" role="dialog" aria-modal="true" aria-labelledby="credits-title" hidden>
+    <div class="modal-box modal-wide">
+      <h2 id="credits-title" data-i18n="credits"></h2>
+      <ul id="credits-list"></ul>
+      <p class="credits-note">
+        History: 《晋祠志》(刘大鹏)、《晋祠指南》(1932)、梁思成《晋汾古建筑预查纪略》(1935)、Architectura Sinica、Wikipedia. See research/SOURCES.md.
+        Sound is synthesized in the browser. Photos are resized and colour-filtered in the game; they keep their original licences.
+      </p>
+      <div class="modal-actions">
+        <button id="btn-close-credits" class="btn-ghost" type="button" data-i18n="close"></button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
