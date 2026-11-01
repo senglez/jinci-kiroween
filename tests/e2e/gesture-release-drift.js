@@ -50,14 +50,17 @@ async (page) => {
         for (let i = 1; i <= 20; i++) await frame(hand(s.X + (X - s.X) * i / 20, s.Y + (Y - s.Y) * i / 20, half));
         await this.at(X, Y, half, 10);
       },
-      // realistic release: gap widens over 6 frames while the pinch point drifts ~140 px
+      // Release: the gap widens over 6 frames while the pinch point drifts ~140 px in total.
+      // Calibrated after real-webcam play with OPENING_RATIO = 0.45: most of the drift happens
+      // once the fingers are clearly open, so only ~30 % of it comes before the ratio passes 0.45.
       async openWithDrift() {
         const a = rnd() * Math.PI * 2;
         const dx = Math.cos(a) * 140;
         const dy = Math.sin(a) * 140;
         const s = { ...cur };
         const halves = [0.015, 0.025, 0.03, 0.04, 0.05, 0.07];
-        for (let k = 1; k <= 6; k++) await frame(hand(s.X + dx * k / 6, s.Y + dy * k / 6, halves[k - 1]));
+        const share = [0.05, 0.15, 0.3, 0.6, 0.85, 1];
+        for (let k = 1; k <= 6; k++) await frame(hand(s.X + dx * share[k - 1], s.Y + dy * share[k - 1], halves[k - 1]));
         await this.at(s.X + dx, s.Y + dy, 0.07, 6);
       },
       center(sel) { const r = document.querySelector(sel).getBoundingClientRect(); return { X: r.x + r.width / 2, Y: r.y + r.height / 2 }; },
