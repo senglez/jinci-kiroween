@@ -151,7 +151,7 @@ h1 {
 #scene-reveal { background: #000; }
 .reveal-photo { position: absolute; inset: 0; overflow: hidden; }
 .reveal-photo img {
-  width: 100%; height: 100%; object-fit: cover; transform: scale(1.2);
+  width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; transform: scale(1.2);
   filter: saturate(.85) brightness(.95);
   transition: transform 7s ease-out, filter 2.5s ease;
 }
