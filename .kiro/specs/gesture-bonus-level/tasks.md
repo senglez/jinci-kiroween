@@ -83,3 +83,17 @@
     - _Requirements: 6.9_
   - [x] 12.4 e2e: asymmetric finger opening that drifts the pinch point; must still place every piece; ready highlight shown before release
     - _Requirements: 6.4, 6.4a, 6.4b_
+
+- [x] 13. Review follow-ups
+  - [x] 13.1 Gesture snap distance back to 90
+    - _Requirements: 6.8_
+  - [x] 13.2 Real full-moon photo on the sky, credited (main spec Requirement 1.1)
+- [x] 14. Easter egg 合十
+  - [x] 14.1 `isPalmsTogether`, `HoldTimer`, `selectHand` in `gesture.js`; properties 11–14 in `tools/test.mjs`
+    - _Requirements: 10.2, 10.4, 10.9, 10.10_
+  - [x] 14.2 Tracker `numHands: 2`, pass all hands; `GestureInput` primary-hand selection, pose check, pinch suppressed while praying
+    - _Requirements: 10.1, 10.6, 10.9_
+  - [x] 14.3 `Puzzle.commitPlace()` and `autoBuild()`; halo UI; 合十 win title; bilingual strings; debug panel shows hands and hold time
+    - _Requirements: 10.3, 10.5, 10.7, 10.8_
+  - [x] 14.4 e2e `tests/e2e/prayer-egg.js`: 5 s pose builds everything; 4 s + long gap does not; hands apart does not; tutorial does not; second hand does not steal control
+    - _Requirements: 10.3, 10.4, 10.5, 10.7, 10.8, 10.9_

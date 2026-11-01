@@ -244,5 +244,13 @@ export const UI = {
     en: 'With one hand, in mid-air, you built the hall once more. The camera is now off.',
   },
   bonusAgain: { zh: '再玩一次隐藏关卡', en: 'Play the hidden level again' },
+  // easter egg 合十 (Req 10) — only shown after the pose has been held for 1 s
+  prayerHold: { zh: '心诚则灵……', en: 'Sincerity moves timber…' },
+  prayerDone: { zh: '心诚则灵！构件自己飞回了原位', en: 'Your sincerity is answered: the parts fly home by themselves' },
+  prayerWinTitle: { zh: '心诚则灵 · 圣母殿自成！', en: 'Sincerity answered! The hall built itself!' },
+  prayerWinText: {
+    zh: '你双手合十，静候五息，千年前的匠人替你把圣母殿搭好了。摄像头已经关闭。',
+    en: 'You pressed your palms together and waited. The builders of a thousand years ago finished the hall for you. The camera is now off.',
+  },
   toTitle: { zh: '回到开始', en: 'Back to start' },
 };

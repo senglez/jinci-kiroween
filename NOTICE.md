@@ -9,6 +9,8 @@ Images in `assets/photos/` and `research/` are **not** covered by the MIT Licens
 
 Author, licence, and source link for every image used in the game are in `assets/photos/credits.json` and the in-game credits. The full research catalogue is in `research/IMAGES.md`.
 
+The moon in the night sky (`assets/photos/moon.png`) is cropped and tinted from [FullMoon2010.jpg](https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg) by Gregory H. Revera, CC BY-SA 3.0; the adapted file is shared under the same licence.
+
 ## Hand tracking (hidden level)
 
 `vendor/mediapipe/` contains unmodified files from Google's MediaPipe, under the Apache License 2.0 (text in `vendor/mediapipe/LICENSE`):

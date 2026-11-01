@@ -69,6 +69,13 @@ if (!errors.length) {
   };
   PIECES.forEach((p) => visit(p.id, []));
   if (!PIECES.some((p) => p.needs.length === 0)) fail('PIECES: no piece can be placed first');
+  // Puzzle.autoBuild() (合十 easter egg) places pieces in array order, so every piece's
+  // supports must come before it in PIECES.
+  PIECES.forEach((p, i) => {
+    for (const n of p.needs) {
+      if (PIECES.findIndex((q) => q.id === n) > i) fail(`PIECES: "${p.id}" is listed before its support "${n}" (autoBuild needs bottom-up order)`);
+    }
+  });
 
   // 4. images
   const html = await readFile(join(root, 'index.html'), 'utf8');

@@ -46,7 +46,7 @@ async function loadLandmarker() {
   const options = (delegate) => ({
     baseOptions: { modelAssetPath: new URL('hand_landmarker.task', VENDOR).href, delegate },
     runningMode: 'VIDEO',
-    numHands: 1,
+    numHands: 2, // two hands for the 合十 easter egg (Req 10.1); play still follows one
     minHandDetectionConfidence: 0.6,
     minHandPresenceConfidence: 0.6,
     minTrackingConfidence: 0.5,
@@ -78,8 +78,8 @@ export class HandTracker {
     this.fps = 0;
   }
 
-  // Asks for the camera, loads the model, then calls onFrame({ landmarks, t }) for every
-  // new video frame. `landmarks` is an array of 21 {x, y, z} points or null (no hand).
+  // Asks for the camera, loads the model, then calls onFrame({ hands, t }) for every new
+  // video frame. `hands` is an array (0–2) of hands, each 21 {x, y, z} points.
   async start(onFrame, onStatus = () => {}) {
     if (this.running) return;
     if (!navigator.mediaDevices?.getUserMedia) throw new TrackerError('nocameraapi');
@@ -113,9 +113,9 @@ export class HandTracker {
       if (v.readyState < 2 || v.currentTime === lastVideoTime) return;
       lastVideoTime = v.currentTime;
       const now = performance.now();
-      let landmarks = null;
+      let hands = [];
       try {
-        landmarks = this.landmarker.detectForVideo(v, now).landmarks?.[0] ?? null;
+        hands = this.landmarker.detectForVideo(v, now).landmarks ?? [];
       } catch { /* a dropped frame is not fatal */ }
       frames++;
       if (now - fpsSince >= 1000) {
@@ -123,7 +123,7 @@ export class HandTracker {
         frames = 0;
         fpsSince = now;
       }
-      onFrame({ landmarks, t: now });
+      onFrame({ hands, t: now });
     };
     this.raf = requestAnimationFrame(tick);
   }

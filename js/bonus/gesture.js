@@ -86,6 +86,76 @@ export class OneEuro {
   }
 }
 
+// ---------- easter egg: palms together 合十 (Requirement 10) ----------
+
+export const LM_EGG = { INDEX_TIP: 8, MIDDLE_TIP: 12 };
+export const PRAYER = {
+  UPRIGHT: 0.8, // middle fingertip at least this many palm lengths above the wrist
+  WRISTS: 1.0, // wrists within this many palm lengths
+  TIPS: 0.7, // index and middle fingertips within this many palm lengths
+  SIZE_RATIO: 0.6, // smaller palm / larger palm
+  HOLD_MS: 5000,
+  GAP_MS: 400,
+};
+
+const palmLength = (h) => dist(h[LM.WRIST], h[LM.MIDDLE_MCP]);
+const upright = (h) => h[LM.WRIST].y - h[LM_EGG.MIDDLE_TIP].y >= PRAYER.UPRIGHT * palmLength(h);
+
+export function isPalmsTogether(a, b) {
+  if (!a || !b) return false;
+  const pa = palmLength(a);
+  const pb = palmLength(b);
+  if (!(pa > 1e-6 && pb > 1e-6)) return false;
+  if (Math.min(pa, pb) / Math.max(pa, pb) < PRAYER.SIZE_RATIO) return false;
+  const s = (pa + pb) / 2;
+  return upright(a) && upright(b)
+    && dist(a[LM.WRIST], b[LM.WRIST]) <= PRAYER.WRISTS * s
+    && dist(a[LM_EGG.MIDDLE_TIP], b[LM_EGG.MIDDLE_TIP]) <= PRAYER.TIPS * s
+    && dist(a[LM.INDEX_TIP], b[LM.INDEX_TIP]) <= PRAYER.TIPS * s;
+}
+
+// Counts how long a pose has been held. Short tracking dropouts (≤ GAP_MS) do not break
+// the run; a longer break restarts it. `done` is reported once per run.
+export class HoldTimer {
+  constructor(holdMs = PRAYER.HOLD_MS, gapMs = PRAYER.GAP_MS) {
+    Object.assign(this, { holdMs, gapMs });
+    this.reset();
+  }
+
+  reset() {
+    this.start = null;
+    this.lastActive = null;
+    this.fired = false;
+  }
+
+  update(active, t) {
+    if (this.lastActive !== null && t - this.lastActive > this.gapMs) this.reset();
+    if (!active) {
+      return { progress: this.start === null ? 0 : Math.min(1, (this.lastActive - this.start) / this.holdMs), done: false };
+    }
+    if (this.start === null) this.start = t;
+    this.lastActive = t;
+    const held = t - this.start;
+    const done = !this.fired && held >= this.holdMs;
+    if (done) this.fired = true;
+    return { progress: Math.min(1, held / this.holdMs), done };
+  }
+}
+
+// With two hands in view, keep following the one nearest the previous cursor point.
+export function selectHand(hands, previous) {
+  if (!hands?.length) return -1;
+  if (hands.length === 1 || !previous) return 0;
+  let best = 0;
+  let bestD = Infinity;
+  hands.forEach((h, i) => {
+    const p = pinchPoint(h);
+    const d = Math.hypot(p.x - previous.x, p.y - previous.y);
+    if (d < bestD) { bestD = d; best = i; }
+  });
+  return best;
+}
+
 const clamp01 = (v) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 0.5);
 
 // Camera point -> unit square of the stage. Mirrored on x so moving the hand right moves

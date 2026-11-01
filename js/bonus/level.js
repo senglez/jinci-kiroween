@@ -39,7 +39,8 @@ export class BonusLevel {
     window.__jinciBonus = {
       level: this,
       useFakeTracker: () => this.useFakeTracker(),
-      feed: (landmarks, t) => this.fake?.emit({ landmarks, t: t ?? performance.now() }),
+      feed: (landmarks, t) => this.fake?.emit({ hands: landmarks ? [landmarks] : [], t: t ?? performance.now() }),
+      feedHands: (hands, t) => this.fake?.emit({ hands, t: t ?? performance.now() }),
       state: () => ({
         active: this.active, screen: this.screen, cameraOn: this.tracker.isOn(),
         roundStarted: this.roundStarted, tutorialStep: this.tutorialStep, holding: this.input?.holding ?? null,
@@ -64,6 +65,7 @@ export class BonusLevel {
   enter() {
     this.active = true;
     this.roundStarted = false;
+    this.byPrayer = false;
     document.body.classList.add('bonus');
     $('#win').hidden = true;
     $('#privacy-hidden-note').hidden = true;
@@ -105,6 +107,8 @@ export class BonusLevel {
         onHand: (seen) => this.onHand(seen),
         onGesture: (g) => this.onGesture(g),
         onLost: () => this.ctx.toast(t(UI.handLost), true),
+        onPrayer: (progress) => this.onPrayer(progress),
+        onPrayerDone: () => this.onPrayerDone(),
       },
     });
     this.input.reset();
@@ -144,11 +148,12 @@ export class BonusLevel {
     const dist = puzzle?.heldDistance();
     const f = (v, n = 2) => (typeof v === 'number' && Number.isFinite(v) ? v.toFixed(n) : '–');
     this.debugEl.textContent = [
-      `hand      ${frame.landmarks ? 'yes' : 'no'}`,
+      `hand      ${frame.hands?.length ? 'yes' : 'no'}`,
       `ratio     ${f(d.ratio)}   grab<${GRAB_RATIO} open>${OPENING_RATIO.toFixed(3)} release>${RELEASE_RATIO}`,
       `state     ${d.pinched ? 'PINCHED' : 'open'}${d.frozen ? '  (frozen at anchor)' : ''}`,
       `holding   ${this.input.holding ?? '–'}`,
       `distance  ${f(dist, 0)} / snap ${puzzle?.snapDistance() ?? '–'}${puzzle?.isInRange() ? '  READY' : ''}`,
+      `hands     ${d.hands ?? 0}${d.praying ? '  合十 ' + f(d.prayerMs / 1000, 1) + ' s / 5 s' : ''}`,
       `fps       ${f(this.tracker.fps, 0)}`,
     ].join('\n');
   }
@@ -160,6 +165,29 @@ export class BonusLevel {
 
   onGesture(g) {
     if ((g === 'grab' && this.tutorialStep === 1) || (g === 'release' && this.tutorialStep === 2)) this.advanceTutorial();
+  }
+
+  // ---------- easter egg 合十 (Req 10) ----------
+
+  roundInPlay() {
+    return this.active && this.roundStarted && this.tutorialStep < 0 && !!this.ctx.ensurePuzzle(false)?.enabled;
+  }
+
+  onPrayer(progress) {
+    const halo = $('#prayer-halo');
+    const show = progress >= 0.2 && this.roundInPlay(); // nothing shown before 1 s (Req 10.5)
+    halo.hidden = !show;
+    if (show) halo.style.setProperty('--p', progress.toFixed(3));
+  }
+
+  async onPrayerDone() {
+    if (!this.roundInPlay()) return; // no effect in the tutorial, while scattering, or after the win (Req 10.8)
+    this.byPrayer = true;
+    this.ctx.sound.bell(196, 0.3);
+    this.ctx.sound.bell(294, 0.2);
+    this.ctx.toast(this.ctx.t(this.ctx.UI.prayerDone));
+    await this.ctx.ensurePuzzle().autoBuild(350);
+    $('#prayer-halo').hidden = true;
   }
 
   // ---------- tutorial (Req 4) ----------
@@ -205,6 +233,15 @@ export class BonusLevel {
     $('#hand-status').hidden = true;
     const { sound, embers, fmt, elapsedMs } = this.ctx;
     $('#bonus-win-time').textContent = fmt(elapsedMs());
+    const { t, UI } = this.ctx;
+    // Req 10.7: different title when the 合十 egg finished the level (data-i18n keeps it after a language switch)
+    const titleKey = this.byPrayer ? 'prayerWinTitle' : 'bonusWinTitle';
+    const textKey = this.byPrayer ? 'prayerWinText' : 'bonusWinText';
+    $('#bonus-win-title').dataset.i18n = titleKey;
+    $('#bonus-win-title').textContent = t(UI[titleKey]);
+    $('#bonus-win-text').dataset.i18n = textKey;
+    $('#bonus-win-text').textContent = t(UI[textKey]);
+    $('#prayer-halo').hidden = true;
     $('#bonus-win-moves').textContent = attempts;
     sound.fanfare();
     embers.celebrate();
@@ -219,7 +256,7 @@ export class BonusLevel {
     this.tracker.stop();
     this.input?.reset();
     this.ctx.ensurePuzzle(false)?.setInputMode('pointer');
-    ['#cam-wrap', '#hand-status', '#tutorial', '#bonus-win'].forEach((s) => { $(s).hidden = true; });
+    ['#cam-wrap', '#hand-status', '#tutorial', '#bonus-win', '#prayer-halo'].forEach((s) => { $(s).hidden = true; });
     this.debugEl?.remove();
     this.debugEl = null;
     this.hidePanel();
