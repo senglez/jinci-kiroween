@@ -164,8 +164,21 @@ In `'gesture'` mode the pointer and keyboard handlers on pieces return early (Re
 |---|---|
 | hand frame | update smoothed cursor; set `hover` if `pieceAt()` finds a piece; if holding, `dragTo()` |
 | `grab` | if hovering a piece → `beginDrag()`, cursor shows *pinched*; else nothing (Req 6.2) |
-| `release` | if holding → `endDrag()` (normal drop rules, Req 6.4) |
+| `release` | if holding → move the piece back to the **anchor** (last firmly pinched position), then `endDrag()` (normal drop rules, Req 6.4, 6.4a) |
+| opening frames | while holding and `ratio > OPENING_RATIO` (0.37), the piece is frozen at the anchor instead of following the drifting pinch point (Req 6.4a) |
 | no hand | fade cursor, show "看不到你的手"; if holding for > 1000 ms → `cancelDrag()` and say the hand was lost (Req 6.6) |
+
+### Field fix: drops missing their target
+
+Found in the first real-webcam test ("能拿起来，但是不能放入"). Three effects added up during a release:
+
+1. Opening the fingers moves the midpoint between thumb and index (the index usually lifts more than the thumb drops), often by 3–5 % of the image, which the active-area stretch turns into 100–150 stage units.
+2. The release only fires after 3 steady frames, so the cursor keeps following that drift for ~100 ms.
+3. The One-Euro filter adds a little lag on top.
+
+With a 90-unit snap radius the piece landed outside it and went back to the tray. The scripted e2e hand opened its fingers symmetrically, so it never drifted and the test passed.
+
+Fix: an **anchor**, the cursor position at the last frame whose ratio was at or below `OPENING_RATIO` (0.37, the middle of the 0.30–0.45 band, so a slightly loose pinch still carries the piece). While held and opening, the piece stays at the anchor; on release it is dropped there. Gesture mode also uses a 160-unit snap radius, and `Puzzle.dragTo()` marks the ghost outline `.in-range` (and the cursor `.ready`) when a drop would snap, so the player can see when to let go. The e2e test now opens the fingers asymmetrically, so the midpoint drifts about 140 px.
 
 ## Level flow (`level.js`)
 
