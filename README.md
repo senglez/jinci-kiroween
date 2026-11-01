@@ -61,5 +61,5 @@ tools/check.mjs     content and code checks (run by the Kiro hook)
 ## Sources and licences
 
 - Code: MIT (see `LICENSE`).
-- Photos keep their own licences (CC BY / CC BY-SA from Wikimedia Commons, or public domain). The in-game credits list each one; `assets/photos/credits.json` holds the full data.
+- Photos keep their own licences (CC BY / CC BY-SA from Wikimedia Commons, or public domain); see `NOTICE.md`. The in-game credits list each one; `assets/photos/credits.json` holds the full data.
 - History sources are listed in [research/SOURCES.md](research/SOURCES.md). The full catalogue of 79 Commons images is in [research/IMAGES.md](research/IMAGES.md).
