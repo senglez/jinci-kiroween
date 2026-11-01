@@ -5,8 +5,9 @@ import { buildPart, buildLanterns, el, PAINT_ORDER, STAGE } from './hall.js';
 import { scatterLayout } from './scatter.js';
 
 // How close (stage units) a dropped piece must be to its home to snap in. A hand in the
-// air is less precise than a mouse, so gesture input gets a wider radius (Req 6.8).
-export const SNAP_DISTANCE = { pointer: 90, gesture: 160 };
+// air is less precise, but a wider radius made the level too easy; the anchor fix (Req 6.4a)
+// is what makes gesture drops reliable, so both use 90 (Req 6.8).
+export const SNAP_DISTANCE = { pointer: 90, gesture: 90 };
 const CELL_MARGIN = 10; // gap between a loose piece and its cell border
 const MAX_JITTER = 24; // largest random offset inside a cell
 const VIEW_TOP = 80; // nothing is drawn above the chiwen tips (~y 96)
@@ -368,7 +369,13 @@ export class Puzzle {
       this.animate(piece.id, this.trayTarget(piece.id), 500);
       return false;
     }
-    this.animate(piece.id, { dx: 0, dy: 0, s: 1, rot: 0 }, 260).then(() => {
+    this.commitPlace(piece);
+    return true;
+  }
+
+  // Put a piece home: the success path shared by a normal drop and autoBuild().
+  commitPlace(piece, ms = 260) {
+    this.animate(piece.id, { dx: 0, dy: 0, s: 1, rot: 0 }, ms).then(() => {
       this.placedLayers[piece.id].appendChild(this.nodes[piece.id]);
       this.nodes[piece.id].classList.add('placed');
       this.ghosts[piece.id].classList.add('filled');
@@ -385,6 +392,20 @@ export class Puzzle {
         this.lanterns.classList.add('lit');
         this.onWin?.(this.attempts);
       }, 700);
+    }
+  }
+
+  // Easter egg 合十: build every remaining piece by itself (Req 10.3). PIECES is already a
+  // valid bottom-up order of the support graph, so each piece's supports are in place first.
+  async autoBuild(stepMs = 350) {
+    if (!this.enabled) return false;
+    this.cancelDrag();
+    this.enabled = false; // no other input while the hall builds itself
+    for (const piece of this.pieces) {
+      if (this.placed.has(piece.id)) continue;
+      this.looseLayer.appendChild(this.nodes[piece.id]); // fly above the tray
+      this.commitPlace(piece, 600);
+      await new Promise((r) => setTimeout(r, stepMs));
     }
     return true;
   }

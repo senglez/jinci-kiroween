@@ -14,7 +14,7 @@
 <body>
   <!-- night sky shared by every scene -->
   <div id="sky" aria-hidden="true">
-    <div class="moon"></div>
+    <div class="moon" role="img" aria-label="满月，右侧暗区是静海 · Full moon; the dark patch right of centre is the Sea of Tranquility"></div>
     <div class="stars"></div>
     <div id="bats"></div>
     <div class="fog fog-1"></div>
@@ -79,6 +79,14 @@
     <svg id="stage" role="application" aria-label="圣母殿拼装 Hall puzzle"></svg>
     <div id="toast" class="toast" role="status"></div>
     <div id="hand-status" class="hand-status" role="status" hidden data-i18n="noHand"></div>
+    <div id="prayer-halo" class="prayer-halo" role="status" hidden>
+      <div class="prayer-ring" aria-hidden="true"></div>
+      <svg class="prayer-hands" viewBox="0 0 100 120" aria-hidden="true">
+        <path d="M49 8 C44 10 41 18 40 30 L36 62 C30 70 24 80 22 92 L18 112 L46 114 L49 70 Z"/>
+        <path d="M51 8 C56 10 59 18 60 30 L64 62 C70 70 76 80 78 92 L82 112 L54 114 L51 70 Z"/>
+      </svg>
+      <span class="prayer-text" data-i18n="prayerHold"></span>
+    </div>
     <aside id="tutorial" class="tutorial" aria-live="polite" hidden>
       <h3 data-i18n="tutTitle"></h3>
       <ol>
@@ -167,7 +175,7 @@
     <div class="modal-box bonus-box">
       <div class="title-lantern ghost-lantern win-lantern" aria-hidden="true"></div>
       <h2 id="bonus-win-title" data-i18n="bonusWinTitle"></h2>
-      <p data-i18n="bonusWinText"></p>
+      <p id="bonus-win-text" data-i18n="bonusWinText"></p>
       <p class="win-stats"><span data-i18n="time"></span> <b id="bonus-win-time"></b> · <span data-i18n="moves"></span> <b id="bonus-win-moves"></b></p>
       <div class="modal-actions">
         <button id="btn-bonus-again" class="btn-primary btn-ghostly" type="button" data-i18n="bonusAgain"></button>

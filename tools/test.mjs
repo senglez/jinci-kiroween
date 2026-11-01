@@ -4,7 +4,7 @@
 // (.kiro/specs/gesture-bonus-level/design.md, "Correctness properties").
 
 import { afterCompletion, createProgressStore, EMPTY_PROGRESS, parseProgress, STORAGE_KEY, UNLOCK_MS } from '../js/bonus/progress.js';
-import { GRAB_RATIO, mapToUnit, OneEuro, PinchMachine, RELEASE_RATIO, STEADY_FRAMES } from '../js/bonus/gesture.js';
+import { GRAB_RATIO, HoldTimer, isPalmsTogether, mapToUnit, OneEuro, PinchMachine, pinchPoint, PRAYER, RELEASE_RATIO, selectHand, STEADY_FRAMES } from '../js/bonus/gesture.js';
 import { MAX_TILT, sameOrder, scatterLayout, shuffle } from '../js/scatter.js';
 import { firstOfSeason, seasonForMonth, wrap } from '../js/gallery.js';
 
@@ -232,6 +232,103 @@ example('P10 sanity: the same test rejects the old random-comparator shuffle', (
   const rng = seeded(2026);
   const chi = worstChi2(() => PIECE_IDS.slice().sort(() => rng() - 0.5));
   assert(chi >= CHI2_CRITICAL_DF8_P001, `old shuffle unexpectedly passed (chi-square ${chi.toFixed(1)})`);
+});
+
+// ---------- Property 11–14: easter egg 合十 ----------
+
+// A plausible palms-together pair centred at (cx, cy) with palm length s, plus small noise.
+function prayerPair(rng, cx = 0.5, cy = 0.5, s = 0.15) {
+  const n = () => (rng() - 0.5) * 0.06 * s;
+  const hand = (side) => {
+    const h = Array.from({ length: 21 }, () => ({ x: cx + side * 0.05 * s, y: cy, z: 0 }));
+    h[0] = { x: cx + side * 0.15 * s + n(), y: cy + s + n(), z: 0 }; // wrist
+    h[9] = { x: cx + side * 0.1 * s + n(), y: cy + n(), z: 0 }; // middle knuckle (palm = s)
+    h[12] = { x: cx + side * 0.05 * s + n(), y: cy - 0.8 * s + n(), z: 0 }; // middle tip
+    h[8] = { x: cx + side * 0.07 * s + n(), y: cy - 0.7 * s + n(), z: 0 }; // index tip
+    h[4] = { x: cx + side * 0.2 * s + n(), y: cy + 0.1 * s + n(), z: 0 }; // thumb tip
+    return h;
+  };
+  return [hand(-1), hand(1)];
+}
+const mapHand = (h, f) => h.map((p) => ({ ...f(p), z: 0 }));
+
+property('P11 palms-together is symmetric and invariant under move and scale', 2000,
+  (rng) => ({ pair: prayerPair(rng, 0.3 + rng() * 0.4, 0.3 + rng() * 0.4, 0.08 + rng() * 0.15), dx: rng() - 0.5, dy: rng() - 0.5, k: 0.5 + rng() * 1.5 }),
+  ({ pair: [a, b], dx, dy, k }) => {
+    const base = isPalmsTogether(a, b);
+    const move = (p) => ({ x: p.x + dx, y: p.y + dy });
+    const scale = (p) => ({ x: 0.5 + (p.x - 0.5) * k, y: 0.5 + (p.y - 0.5) * k });
+    return base === true
+      && isPalmsTogether(b, a) === base
+      && isPalmsTogether(mapHand(a, move), mapHand(b, move)) === base
+      && isPalmsTogether(mapHand(a, scale), mapHand(b, scale)) === base;
+  });
+
+property('P12 hands apart or pointing down are not palms together', 2000,
+  (rng) => ({ pair: prayerPair(rng), far: 2.05 + rng() * 3, angle: rng() * Math.PI * 2, flip: rng() < 0.5 }),
+  ({ pair: [a, b], far, angle, flip }) => {
+    const s = 0.15;
+    if (flip) {
+      // Both hands together but pointing down (mirror the whole pair about a horizontal
+      // line): every distance check still passes, so only "upright" can reject it.
+      const m = (p) => ({ x: p.x, y: 1 - p.y });
+      return isPalmsTogether(mapHand(a, m), mapHand(b, m)) === false;
+    }
+    const away = mapHand(b, (p) => ({ x: p.x + Math.cos(angle) * far * s, y: p.y + Math.sin(angle) * far * s }));
+    return isPalmsTogether(a, away) === false;
+  });
+
+property('P13 hold fires once, only after 5 s of a run without long gaps', 1500,
+  (rng) => {
+    // Segments of steady tracking (0–7 s of frames, mostly active, short dropouts),
+    // separated by breaks that may or may not exceed the gap limit.
+    const frames = [];
+    let t = 0;
+    for (let seg = int(rng, 1, 6); seg > 0; seg--) {
+      const end = t + rng() * 7000;
+      while (t < end) {
+        t += pick(rng, [16, 33, 33, 33, 50, 120, 300, 390]);
+        frames.push({ t, active: rng() < 0.9 });
+      }
+      t += pick(rng, [100, 350, 401, 450, 900, 2000]);
+      frames.push({ t, active: rng() < 0.5 });
+    }
+    return frames;
+  },
+  (frames) => {
+    const timer = new HoldTimer();
+    let runStart = null;
+    let lastActive = null;
+    let firedThisRun = false;
+    for (const { t, active } of frames) {
+      if (lastActive !== null && t - lastActive > PRAYER.GAP_MS) { runStart = null; lastActive = null; firedThisRun = false; }
+      if (active) { runStart ??= t; lastActive = t; }
+      const { done, progress } = timer.update(active, t);
+      if (progress < 0 || progress > 1) return false;
+      if (done) {
+        if (firedThisRun || !active || runStart === null || t - runStart < PRAYER.HOLD_MS) return false;
+        firedThisRun = true;
+      }
+      // must fire as soon as the model says it is due
+      if (!done && active && runStart !== null && t - runStart >= PRAYER.HOLD_MS && !firedThisRun) return false;
+    }
+    return true;
+  });
+
+property('P14 selectHand returns a valid index, nearest to the previous point', 2000,
+  (rng) => ({ hands: Array.from({ length: int(rng, 1, 3) }, () => prayerPair(rng, rng(), rng())[0]), prev: rng() < 0.2 ? null : { x: rng(), y: rng() } }),
+  ({ hands, prev }) => {
+    const i = selectHand(hands, prev);
+    if (!(i >= 0 && i < hands.length)) return false;
+    if (hands.length === 1 || !prev) return i === 0;
+    const d = (h) => { const p = pinchPoint(h); return Math.hypot(p.x - prev.x, p.y - prev.y); };
+    return hands.every((h) => d(hands[i]) <= d(h));
+  });
+
+example('egg: no hands or one hand is never palms together; selectHand([]) is -1', () => {
+  const [a] = prayerPair(seeded(1));
+  assert(!isPalmsTogether(a, null) && !isPalmsTogether(null, null), 'missing hand');
+  assert(selectHand([], null) === -1, 'empty list');
 });
 
 // ---------- gallery paging (spec: jinci-gallery) ----------

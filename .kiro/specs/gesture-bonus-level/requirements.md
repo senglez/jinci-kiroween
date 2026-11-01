@@ -94,7 +94,7 @@ The level must protect the player's privacy: video is processed only in the brow
 5. A gesture SHALL only count after it has been seen steadily for a short time, so that a single misread frame does not grab or drop.
 6. IF the hand is lost for more than 1 second while holding a piece THEN the piece SHALL return to its tray cell and the game SHALL say the hand was lost.
 7. The hint button, progress counter, timer, and fact cards SHALL work as in the main puzzle.
-8. The snap distance SHALL be 90 stage units for pointer input and 160 stage units for gesture input, because a hand in the air is less precise than a mouse.
+8. The snap distance SHALL be 90 stage units for both pointer and gesture input. *(Changed after review: 160 for gestures made the level too easy. The anchor of 4a is what keeps gesture drops reliable.)*
 9. WHEN the page URL contains `?debug` THEN the hidden level SHALL show a small panel with the live pinch ratio, gesture state, tracker frame rate, and the held piece's distance to its home, for tuning on real hardware.
 
 ### Requirement 7: Bonus level flow and success
@@ -136,6 +136,23 @@ This requirement applies to every scatter, in the main game and in the bonus lev
 5. WHEN the tray layout changes between landscape and portrait THEN each loose piece SHALL keep its assigned cell number.
 6. The random choices SHALL come from a random-number source that can be replaced in tests, and the layout SHALL be computed by a pure function.
 
+### Requirement 10: Secret easter egg 合十 (palms together)
+
+**User Story:** As a curious player, I want a hidden reward for an unexpected gesture, so that the level has a secret worth discovering and sharing.
+
+#### Acceptance Criteria
+
+1. WHILE a hidden-level round is in play (after the tutorial and the scatter, before the win) the hand tracker SHALL track up to two hands.
+2. The game SHALL count two hands as "palms together" WHEN both hands point upwards (each middle fingertip at least 0.8 palm lengths above its wrist), the two wrists are within 1 palm length of each other, the two middle fingertips and the two index fingertips are each within 0.7 palm lengths of each other, and the two hands appear at a similar size (the smaller palm is at least 60 % of the larger). Distances SHALL be relative to palm length, so that the check works near and far from the camera.
+3. WHEN the palms-together pose has been held for 5 seconds THEN the game SHALL build every remaining piece by itself, in a valid support order, one piece about every 0.35 s, and then finish the level.
+4. Tracking dropouts of up to 0.4 s SHALL NOT break the hold; a longer break SHALL restart the 5-second count.
+5. AFTER the pose has been held for 1 second THE game SHALL show a growing golden halo with "心诚则灵……" so the player knows something is happening. It SHALL NOT be shown or hinted before that.
+6. WHILE the palms-together pose is held THE game SHALL NOT grab, move, or drop pieces; a piece held when the pose starts SHALL go back to its tray cell.
+7. WHEN the level is finished this way THEN the success dialog SHALL say "心诚则灵 · 圣母殿自成！" instead of the normal title. The time and attempts SHALL still be shown, and the camera SHALL be off.
+8. The pose SHALL have no effect during the tutorial, while pieces are scattering, after the win, or in the main game.
+9. WHEN one hand is pinching and a second hand enters the view THEN the game SHALL keep following the hand nearest the cursor, so that a second hand does not steal control.
+10. The palms-together check and the hold timer SHALL be pure functions so they can be property-tested.
+
 ## Decisions from review
 
 1. Unlock is one chance per browser, remembered in `localStorage` (Requirement 1).
@@ -143,3 +160,4 @@ This requirement applies to every scatter, in the main game and in the bonus lev
 3. Without a usable camera or tracker the only option is "返回"; there is no mouse fallback (Requirement 3).
 4. The hand tracker library and model are vendored into the repository, not loaded from a CDN (Requirement 8).
 5. Every scatter is a fresh uniform shuffle that differs from the previous one, in both the main game and the bonus level (Requirement 9).
+6. Gesture snap distance back to 90 (Requirement 6.8). Real full-moon photo on the sky (main spec, Requirement 1). Secret palms-together easter egg (Requirement 10).

@@ -311,5 +311,13 @@ export const CREDITS = [
     "author": "xiquinhosilva",
     "license": "CC BY 2.0",
     "license_url": "https://creativecommons.org/licenses/by/2.0"
+  },
+  {
+    "file": "assets/photos/moon.png",
+    "source": "https://commons.wikimedia.org/wiki/File:FullMoon2010.jpg",
+    "title": "Full Moon (FullMoon2010.jpg), cropped",
+    "author": "Gregory H. Revera",
+    "license": "CC BY-SA 3.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/3.0"
   }
 ];

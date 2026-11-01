@@ -180,6 +180,45 @@ With a 90-unit snap radius the piece landed outside it and went back to the tray
 
 Fix: an **anchor**, the cursor position at the last frame whose ratio was at or below `OPENING_RATIO` (0.37, the middle of the 0.30–0.45 band, so a slightly loose pinch still carries the piece). While held and opening, the piece stays at the anchor; on release it is dropped there. Gesture mode also uses a 160-unit snap radius, and `Puzzle.dragTo()` marks the ghost outline `.in-range` (and the cursor `.ready`) when a drop would snap, so the player can see when to let go. The e2e test now opens the fingers asymmetrically, so the midpoint drifts about 140 px.
 
+### Easter egg: palms together 合十 (Requirement 10)
+
+**Tracking two hands.** `HandLandmarker` runs with `numHands: 2`. `tracker.js` passes all detected hands as `hands`, and `GestureInput` picks the **primary** hand with `selectHand(hands, previousPinchPoint)`: the hand whose pinch point is nearest to where the cursor was, or the first hand if there is no previous point (Req 10.9).
+
+**Pose check** (pure, `gesture.js`), with `palm(h) = dist(h[0], h[9])` and `s = (palm(a) + palm(b)) / 2`:
+
+```
+upright(h)   = h[0].y − h[12].y ≥ 0.8 · palm(h)      (middle fingertip above the wrist)
+isPalmsTogether(a, b) =
+     upright(a) and upright(b)
+ and min(palm a, palm b) / max(palm a, palm b) ≥ 0.6
+ and dist(a[0],  b[0])  ≤ 1.0 · s     (wrists)
+ and dist(a[12], b[12]) ≤ 0.7 · s     (middle fingertips)
+ and dist(a[8],  b[8])  ≤ 0.7 · s     (index fingertips)
+```
+
+(MediaPipe image y grows downward, so "above" means a smaller y.) All thresholds are relative to `s`, so the check is invariant under moving or uniformly scaling both hands, and symmetric in `a` and `b`.
+
+**Hold timer** (pure):
+
+```js
+class HoldTimer {               // HOLD_MS = 5000, GAP_MS = 400
+  update(active, t) → { progress: 0…1, done: boolean }
+}
+```
+
+The run starts at the first active frame; inactive frames are ignored until more than `GAP_MS` has passed since the last active frame, which resets the run. `done` is reported once per run, when `t − start ≥ HOLD_MS`.
+
+**Input.** On each frame `GestureInput` checks the pose for the first two hands and updates the timer (inactive when fewer than two hands). While the pose holds, pinch handling is skipped and the cursor is hidden; a held piece is cancelled back to the tray when the pose starts (Req 10.6). Progress and completion go to `listener.onPrayer(progress)` / `onPrayerDone()`.
+
+**Level.** `BonusLevel` shows `#prayer-halo` only while `progress ≥ 0.2` (1 s) and the round is in play, and ignores everything otherwise (Req 10.5, 10.8). On done it sets `byPrayer`, and calls `Puzzle.autoBuild(350)`, which disables input, cancels any drag, and places each unplaced piece in `PIECES` order (already a valid topological order of the support graph) through the same `commitPlace()` used by a normal successful drop, so the counter, fact cards, sounds, lanterns, and `onWin` all behave as usual. `win()` uses the 合十 title when `byPrayer` is set.
+
+**Properties** (added to `tools/test.mjs`):
+
+11. `isPalmsTogether` is symmetric, and invariant under translating and uniformly scaling both hands.
+12. Moving one hand of a palms-together pair more than 2 palm lengths away, or tilting either hand to point down, makes it false.
+13. `HoldTimer`: `done` happens at most once per run, never earlier than 5000 ms after the run started, and only if no gap between active frames exceeded 400 ms.
+14. `selectHand` always returns a valid index, returns 0 for a single hand, and returns the nearest hand to the previous point.
+
 ## Level flow (`level.js`)
 
 ```

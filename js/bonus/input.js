@@ -1,7 +1,9 @@
 // Turns hand-tracker frames into puzzle drags with a ghost-hand cursor.
 // Spec: gesture-bonus-level, Requirements 5 and 6.
 
-import { mapToUnit, OneEuro, OPENING_RATIO, PinchMachine, pinchPoint, pinchRatio } from './gesture.js';
+import {
+  HoldTimer, isPalmsTogether, mapToUnit, OneEuro, OPENING_RATIO, PinchMachine, pinchPoint, pinchRatio, PRAYER, selectHand,
+} from './gesture.js';
 
 export const HAND_LOST_MS = 1000;
 const RESET_FILTER_AFTER_MS = 300; // after a gap, jump to the hand instead of gliding there
@@ -18,6 +20,10 @@ export class GestureInput {
     this.handVisible = false;
     this.holding = null;
     this.pos = null;
+    this.lastPinch = null;
+    this.prayerTimer = new HoldTimer();
+    this.prayerShown = false;
+    this.debug = {};
   }
 
   reset() {
@@ -27,6 +33,10 @@ export class GestureInput {
     this.fx.reset();
     this.fy.reset();
     this.lastSeen = null;
+    this.lastPinch = null;
+    this.prayerTimer.reset();
+    if (this.prayerShown) this.listener.onPrayer?.(0);
+    this.prayerShown = false;
     this.setHand(false);
   }
 
@@ -37,17 +47,44 @@ export class GestureInput {
     this.listener.onHand?.(seen);
   }
 
-  handle({ landmarks, t }) {
+  // frame: { hands: [landmarks…], t } from the tracker, or { landmarks, t } for a single hand.
+  handle({ hands, landmarks, t }) {
+    hands = hands ?? (landmarks ? [landmarks] : []);
+
+    // Easter egg 合十: two hands pressed together (Req 10). While the pose holds, no pinching.
+    const praying = hands.length >= 2 && isPalmsTogether(hands[0], hands[1]);
+    const prayer = this.prayerTimer.update(praying, t);
+    this.debug = { ...this.debug, hands: hands.length, praying, prayerMs: prayer.progress * PRAYER.HOLD_MS };
+    if (prayer.progress > 0 || this.prayerShown) this.listener.onPrayer?.(prayer.progress);
+    this.prayerShown = prayer.progress > 0;
+    if (prayer.done) this.listener.onPrayerDone?.();
+    if (praying) {
+      if (this.holding) {
+        this.puzzle.cancelDrag(); // a piece held when the pose starts goes back (Req 10.6)
+        this.holding = null;
+      }
+      this.machine.reset();
+      this.setHand(true); // hands are in view, so no "看不到你的手"
+      this.cursor.classList.remove('visible', 'pinched', 'hover', 'ready'); // no cursor while praying
+      this.lastSeen = t;
+      return;
+    }
+
+    // Follow the hand nearest the previous cursor point, so a second hand cannot steal control (Req 10.9).
+    const i = selectHand(hands, this.lastPinch);
+    landmarks = i >= 0 ? hands[i] : null;
     if (!landmarks) {
       this.noHand(t);
       return;
     }
+    this.lastPinch = pinchPoint(landmarks);
     if (this.lastSeen === null || t - this.lastSeen > RESET_FILTER_AFTER_MS) {
       this.fx.reset();
       this.fy.reset();
     }
     this.lastSeen = t;
     this.setHand(true);
+    this.cursor.classList.add('visible'); // may have been hidden by the 合十 pose
 
     // cursor position on screen
     const unit = mapToUnit(pinchPoint(landmarks));
@@ -60,7 +97,7 @@ export class GestureInput {
     const ratio = pinchRatio(landmarks);
     const event = this.machine.update(ratio);
     const opening = ratio > OPENING_RATIO;
-    this.debug = { ratio, pinched: this.machine.pinched, frozen: !!this.holding && opening };
+    this.debug = { ...this.debug, ratio, pinched: this.machine.pinched, frozen: !!this.holding && opening };
     if (this.holding) {
       // Follow the hand only while the pinch is firm; once it starts opening, the piece
       // stays at the anchor, and that is where it will be dropped (Req 6.4a).

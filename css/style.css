@@ -33,7 +33,9 @@ button { font: inherit; cursor: pointer; }
 }
 .moon {
   position: absolute; top: 7%; right: 12%; width: min(18vw, 160px); aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(circle at 38% 35%, #fff8e1 0%, #f4dca0 45%, #d9a85a 100%);
+  /* real full-moon photo (Gregory H. Revera, CC BY-SA 3.0): Mare Tranquillitatis 静海 is the dark patch right of centre */
+  background: url(../assets/photos/moon.png) center / cover no-repeat, #d9c9a0;
+  filter: sepia(.28) saturate(1.2) brightness(1.06); /* a warm harvest-moon tint to match the lanterns */
   box-shadow: 0 0 60px 20px rgba(255, 196, 92, .35), 0 0 160px 60px rgba(139, 92, 246, .18);
 }
 .stars {
@@ -453,4 +455,29 @@ body.bonus #btn-gallery { display: none; } /* never leave the camera running beh
   .gallery-frame { height: min(52vh, calc((100vw - 40px) * .8)); }
   .gallery-nav { width: 44px; height: 44px; font-size: 28px; }
   .controls { flex-wrap: wrap; justify-content: flex-end; max-width: 92vw; }
+}
+
+/* ---------- easter egg 合十: golden halo, shown after 1 s of palms together ---------- */
+.prayer-halo {
+  position: absolute; left: 50%; top: 42%; z-index: 4;
+  translate: -50% -50%; /* separate from transform, which the fade-in animation uses */
+  width: min(42vmin, 300px); aspect-ratio: 1; display: grid; place-items: center; pointer-events: none;
+  animation: ghost-appear 1s ease-out both;
+}
+.prayer-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(var(--lantern-2) calc(var(--p, 0) * 1turn), rgba(255, 195, 92, .12) 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent 78%, #000 80%);
+  mask: radial-gradient(farthest-side, transparent 78%, #000 80%);
+  filter: drop-shadow(0 0 18px rgba(255, 195, 92, .9));
+}
+.prayer-halo::before {
+  content: ''; position: absolute; inset: 12%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 220, 140, calc(.15 + var(--p, 0) * .45)), transparent 70%);
+}
+.prayer-hands { position: relative; width: 38%; filter: drop-shadow(0 0 14px rgba(255, 195, 92, .9)); }
+.prayer-hands path { fill: rgba(255, 210, 120, .25); stroke: var(--lantern-2); stroke-width: 3; stroke-linejoin: round; }
+.prayer-text {
+  position: absolute; bottom: -2.2em; white-space: nowrap; font-family: var(--font-title); font-size: 26px;
+  color: var(--lantern-2); text-shadow: 0 0 12px rgba(255, 138, 31, .9);
 }
