@@ -8,7 +8,7 @@ export const RELEASE_RATIO = 0.45; // pinch opens above this (hysteresis gap bet
 export const STEADY_FRAMES = 3; // frames a gesture must hold before it counts
 // While holding, a ratio above this means the fingers are opening: freeze the piece so the
 // drifting pinch point cannot pull it off target before the release fires (Req 6.4a).
-export const OPENING_RATIO = (GRAB_RATIO + RELEASE_RATIO) / 2;
+export const OPENING_RATIO = RELEASE_RATIO; // 0.45: tuned after real-webcam play (was the 0.375 mid-band)
 export const ACTIVE_AREA = { min: 0.15, max: 0.85 }; // part of the camera image mapped to the whole stage
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
