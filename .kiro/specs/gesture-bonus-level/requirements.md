@@ -2,18 +2,19 @@
 
 ## Introduction
 
-A hidden bonus level for the Jinci game. A player who rebuilds the Hall of the Holy Mother within 2 minutes on their first try unlocks it. In the bonus level the player rebuilds the hall again, but this time without mouse or touch: the computer's webcam tracks one hand, a closed hand grabs a piece, and an open hand drops it. The building rules, pieces, and fact cards are the same as in the main puzzle (spec `jinci-hall-game`, Requirement 4).
+A hidden bonus level for the Jinci game. A player who rebuilds the Hall of the Holy Mother within 2 minutes on their first try in this browser unlocks it. Each browser gets exactly one chance. In the bonus level the player rebuilds the hall again, but this time without mouse or touch: the computer's webcam tracks one hand, pinching thumb and index finger together grabs a piece, and opening the pinch drops it. The building rules, pieces, and fact cards are the same as in the main puzzle (spec `jinci-hall-game`, Requirement 4).
 
 The level must protect the player's privacy: video is processed only in the browser and never leaves the device.
 
 ## Glossary
 
-- **First completion**: the first time the player finishes the main puzzle after loading the page. Replays started with "再穿越一次" in the same page load are not first completions.
+- **First completion**: the first time the main puzzle is ever finished in this browser. It is remembered in `localStorage`, so reloading the page, replaying, or opening a new tab does not give another chance.
 - **Completion time**: the game timer value at the moment the 9th piece is placed, measured from when the pieces finish scattering (same value the success dialog shows).
 - **Unlock threshold**: 120 seconds.
 - **Ghost hand**: the on-screen cursor that follows the player's tracked hand.
-- **Grab gesture**: a closed hand (fist).
-- **Release gesture**: an open hand (palm open, fingers spread).
+- **Grab gesture**: a pinch, thumb tip and index fingertip brought together.
+- **Release gesture**: ending the pinch, thumb tip and index fingertip moved apart.
+- **Pinch point**: the midpoint between the thumb tip and the index fingertip; the cursor follows this point.
 - **Hand tracker**: the in-browser hand-landmark model that reads webcam frames.
 
 ## Requirements
@@ -26,9 +27,11 @@ The level must protect the player's privacy: video is processed only in the brow
 
 1. WHEN the player finishes the first completion AND the completion time is under 120 seconds THEN the success dialog SHALL reveal a hidden-level entrance with a spooky reveal effect and the text "隐藏关卡已解锁：鬼手营造".
 2. WHEN the first completion takes 120 seconds or longer THEN the success dialog SHALL NOT show the entrance, and SHALL NOT hint that a hidden level exists.
-3. WHEN a later replay in the same page load is under 120 seconds BUT the first completion was not THEN the hidden level SHALL stay locked.
-4. WHEN the level is unlocked THEN it SHALL stay available for the rest of the page load, including after replays.
-5. The unlock rule SHALL be implemented as a pure function of (is first completion, completion time) so it can be tested on its own.
+3. WHEN any completion after the first is under 120 seconds THEN the hidden level SHALL stay locked, even after a page reload.
+4. WHEN the level is unlocked THEN it SHALL stay unlocked in this browser across reloads, and the title screen SHALL show a hidden-level entrance as well as the success dialog.
+5. The game SHALL record the first completion and the unlock result in `localStorage` as soon as the 9th piece is placed.
+6. IF `localStorage` cannot be read or written (for example, a private window that blocks storage) THEN the game SHALL apply the same rule for the current page load only.
+7. The unlock rule SHALL be implemented as a pure function of (stored progress, completion time) that returns the new stored progress, so it can be tested on its own.
 
 ### Requirement 2: Camera permission and privacy
 
@@ -49,9 +52,9 @@ The level must protect the player's privacy: video is processed only in the brow
 #### Acceptance Criteria
 
 1. WHILE the hand tracker is loading THE game SHALL show a loading message.
-2. IF the browser has no camera API, no camera is found, or the player denies permission THEN the game SHALL explain the cause in plain words and offer "用鼠标玩这一关" and "返回".
-3. IF the hand tracker fails to load (for example, no network) THEN the game SHALL explain this and offer the same two choices.
-4. WHEN the player chooses "用鼠标玩这一关" THEN the bonus level SHALL run with normal pointer input, and its success screen SHALL say it was played with the mouse.
+2. IF the browser has no camera API, no camera is found, the camera is in use by another app, or the player denies permission THEN the game SHALL explain the cause in plain words and offer only "返回".
+3. IF the hand tracker fails to load (for example, the browser lacks WebAssembly SIMD) THEN the game SHALL explain this and offer only "返回".
+4. The bonus level SHALL NOT accept mouse, touch, or keyboard input for moving pieces. (Buttons such as "退出" and the hint stay clickable.)
 
 ### Requirement 4: Gesture tutorial
 
@@ -59,8 +62,8 @@ The level must protect the player's privacy: video is processed only in the brow
 
 #### Acceptance Criteria
 
-1. WHEN tracking starts THEN the game SHALL show a short tutorial: show your hand, make a fist to grab, open your hand to drop.
-2. The tutorial SHALL confirm each step when the player performs it (hand seen, fist seen, open hand seen), then start the level.
+1. WHEN tracking starts THEN the game SHALL show a short tutorial: show your hand, pinch thumb and index finger to grab, open them to drop.
+2. The tutorial SHALL confirm each step when the player performs it (hand seen, pinch seen, release seen), then start the level.
 3. The tutorial SHALL offer a "跳过" button.
 
 ### Requirement 5: Ghost-hand cursor
@@ -69,9 +72,9 @@ The level must protect the player's privacy: video is processed only in the brow
 
 #### Acceptance Criteria
 
-1. WHILE a hand is tracked THE game SHALL show a glowing ghost-hand cursor on the puzzle stage at the tracked position, mirrored so that moving the hand right moves the cursor right.
+1. WHILE a hand is tracked THE game SHALL show a glowing ghost-hand cursor on the puzzle stage at the pinch point, mirrored so that moving the hand right moves the cursor right.
 2. The cursor SHALL be smoothed so that it does not jitter when the hand is still.
-3. The cursor SHALL show its state: open (idle), hovering over a grabbable piece, and closed (holding).
+3. The cursor SHALL show its state: open (idle), hovering over a grabbable piece, and pinched (holding).
 4. WHEN no hand is tracked THEN the cursor SHALL fade out and the game SHALL show "看不到你的手".
 5. The usable hand area SHALL map to the whole stage, so the player can reach every tray cell and every piece position without leaving the camera's view.
 
@@ -83,7 +86,8 @@ The level must protect the player's privacy: video is processed only in the brow
 
 1. WHEN the cursor is over an unplaced piece AND the player makes the grab gesture THEN that piece SHALL be picked up and follow the cursor, as in a mouse drag.
 2. WHEN the player makes the grab gesture over empty space THEN nothing SHALL be picked up.
-3. WHILE a piece is held THE game SHALL keep holding it until the release gesture, even if the hand briefly looks ambiguous.
+3. WHILE a piece is held THE game SHALL keep holding it until the release gesture, even if the pinch distance briefly wavers. The release distance SHALL be larger than the grab distance (hysteresis).
+3a. The pinch distance SHALL be measured relative to the hand's size in the image, so that grabbing works whether the hand is near or far from the camera.
 4. WHEN the player makes the release gesture while holding a piece THEN the game SHALL drop it and apply exactly the main puzzle's drop rules (snap within 90 stage units, support check, messages, attempt counting).
 5. A gesture SHALL only count after it has been seen steadily for a short time, so that a single misread frame does not grab or drop.
 6. IF the hand is lost for more than 1 second while holding a piece THEN the piece SHALL return to its tray cell and the game SHALL say the hand was lost.
@@ -108,14 +112,14 @@ The level must protect the player's privacy: video is processed only in the brow
 #### Acceptance Criteria
 
 1. Every new piece of text SHALL have Chinese and English versions (checked by `tools/check.mjs`).
-2. The hand tracker and its model SHALL be loaded only when the player opens the hidden level, so that the main game's load time does not change.
+2. The hand tracker library, its WebAssembly files, and the model SHALL be stored in this repository and served from the same site, with no requests to other hosts. They SHALL be loaded only when the player opens the hidden level, so that the main game's load time does not change.
 3. On a typical laptop, the cursor SHALL update at 20 frames per second or more.
-4. The hand tracker library and model SHALL be under an open-source licence compatible with publishing this repository, and SHALL be credited.
+4. The hand tracker library and model SHALL be under an open-source licence compatible with publishing this repository. Their licence text SHALL be included next to the vendored files and they SHALL be credited in `NOTICE.md` and the in-game credits.
 5. The main game's behaviour, including mouse, touch, and keyboard play, SHALL NOT change.
 
-## Open questions for review
+## Decisions from review
 
-1. **Unlock scope**: "first completion" is counted per page load. Should it instead be once per browser forever (saved in localStorage), so that reloading does not give a second chance?
-2. **Grab gesture**: fist to grab / open hand to drop (as you described). The alternative is pinching thumb and index finger, which is often more precise. Keep fist?
-3. **Mouse fallback**: if the camera is unavailable, Requirement 3.4 lets the player finish the bonus level with the mouse. Keep this, or show only "返回"?
-4. **New dependency**: the hand tracker (Google MediaPipe, Apache-2.0) would be loaded from a CDN only in the hidden level. This breaks the current steering rule "no runtime dependencies". OK to allow this one exception, or should I vendor the library and model files into the repo (about 10 MB)?
+1. Unlock is one chance per browser, remembered in `localStorage` (Requirement 1).
+2. Grab is a thumb–index pinch, not a fist (Requirements 4–6).
+3. Without a usable camera or tracker the only option is "返回"; there is no mouse fallback (Requirement 3).
+4. The hand tracker library and model are vendored into the repository, not loaded from a CDN (Requirement 8).
