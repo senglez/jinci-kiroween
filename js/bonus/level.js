@@ -3,8 +3,10 @@
 
 import { HandTracker } from './tracker.js';
 import { GestureInput } from './input.js';
+import { GRAB_RATIO, OPENING_RATIO, RELEASE_RATIO } from './gesture.js';
 
 const $ = (sel) => document.querySelector(sel);
+const DEBUG = new URLSearchParams(location.search).has('debug');
 const STEPS = ['hand', 'pinch', 'release'];
 
 export class BonusLevel {
@@ -127,6 +129,28 @@ export class BonusLevel {
   onFrame(frame) {
     if (!this.active || !this.input) return;
     this.input.handle(frame);
+    if (DEBUG) this.renderDebug(frame);
+  }
+
+  // ?debug: live numbers for tuning on real hardware (Req 6.9)
+  renderDebug(frame) {
+    if (!this.debugEl) {
+      this.debugEl = document.createElement('pre');
+      this.debugEl.className = 'gesture-debug';
+      document.body.appendChild(this.debugEl);
+    }
+    const d = this.input.debug ?? {};
+    const puzzle = this.ctx.ensurePuzzle(false);
+    const dist = puzzle?.heldDistance();
+    const f = (v, n = 2) => (typeof v === 'number' && Number.isFinite(v) ? v.toFixed(n) : '–');
+    this.debugEl.textContent = [
+      `hand      ${frame.landmarks ? 'yes' : 'no'}`,
+      `ratio     ${f(d.ratio)}   grab<${GRAB_RATIO} open>${OPENING_RATIO.toFixed(3)} release>${RELEASE_RATIO}`,
+      `state     ${d.pinched ? 'PINCHED' : 'open'}${d.frozen ? '  (frozen at anchor)' : ''}`,
+      `holding   ${this.input.holding ?? '–'}`,
+      `distance  ${f(dist, 0)} / snap ${puzzle?.snapDistance() ?? '–'}${puzzle?.isInRange() ? '  READY' : ''}`,
+      `fps       ${f(this.tracker.fps, 0)}`,
+    ].join('\n');
   }
 
   onHand(seen) {
@@ -196,6 +220,8 @@ export class BonusLevel {
     this.input?.reset();
     this.ctx.ensurePuzzle(false)?.setInputMode('pointer');
     ['#cam-wrap', '#hand-status', '#tutorial', '#bonus-win'].forEach((s) => { $(s).hidden = true; });
+    this.debugEl?.remove();
+    this.debugEl = null;
     this.hidePanel();
     $('#ghost-hand').classList.remove('visible', 'pinched', 'hover');
     document.body.classList.remove('bonus');

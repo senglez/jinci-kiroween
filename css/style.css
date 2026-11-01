@@ -377,6 +377,18 @@ body.bonus #stage .lanterns.lit .lantern-body { fill: var(--ghost-green); }
 .ghost-hand.hover .gh-ring { opacity: 1; animation: spin 3s linear infinite; }
 .ghost-hand.pinched .gh-hand { transform: scale(.8); fill: rgba(109, 255, 180, .45); }
 .ghost-hand.pinched .gh-pinch { transform: scale(1.6); opacity: 1; fill: #fff; }
+/* held piece is within snap range: open your fingers now (Req 6.4b) */
+.ghost-hand.ready { filter: drop-shadow(0 0 16px rgba(255, 195, 92, 1)); }
+.ghost-hand.ready .gh-hand { stroke: var(--lantern-2); fill: rgba(255, 195, 92, .35); }
+.ghost-hand.ready .gh-ring { opacity: 1; stroke: var(--lantern-2); stroke-dasharray: none; animation: none; }
+#stage .ghost.in-range * { stroke: var(--lantern-2) !important; stroke-width: 5 !important; stroke-dasharray: none !important; }
+#stage .ghost.in-range { filter: url(#glow); animation: none; }
+/* ?debug tuning panel */
+.gesture-debug {
+  position: fixed; left: 12px; bottom: 12px; z-index: 56; margin: 0; padding: 8px 10px; pointer-events: none;
+  font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; color: #b6ffd9; background: rgba(0, 0, 0, .75);
+  border: 1px solid var(--ghost-green); border-radius: 8px; white-space: pre;
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .hand-status {

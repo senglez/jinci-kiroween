@@ -73,3 +73,13 @@
 - [x] 11. Docs
   - [x] 11.1 README: hidden level, privacy, vendored files, how to run the tests
     - _Requirements: 2.3, 8.4_
+
+- [x] 12. Field fix: pieces can be picked up but not dropped in place (real-webcam report)
+  - [x] 12.1 Anchor: freeze the held piece while the pinch opens; drop at the last firmly pinched position
+    - _Requirements: 6.4, 6.4a_
+  - [x] 12.2 Per-mode snap distance (90 pointer, 160 gesture) and "ready to drop" highlight on outline and cursor
+    - _Requirements: 6.4b, 6.8_
+  - [x] 12.3 `?debug` tuning panel: ratio, state, fps, distance to home
+    - _Requirements: 6.9_
+  - [x] 12.4 e2e: asymmetric finger opening that drifts the pinch point; must still place every piece; ready highlight shown before release
+    - _Requirements: 6.4, 6.4a, 6.4b_

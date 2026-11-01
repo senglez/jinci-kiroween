@@ -19,7 +19,7 @@ Every scatter is a fresh, uniformly random arrangement that never repeats the pr
 
 If the **first** time you finish in this browser takes under 2 minutes, a hidden level unlocks. Each browser gets one chance; the result is remembered in `localStorage`. Once unlocked, the entrance stays on the title screen.
 
-In the hidden level you rebuild the hall again with your webcam and one hand: **pinch thumb and index finger to grab, open them to drop**. A ghost-hand cursor follows the point between your fingers. The rules are the same as the main puzzle; mouse and touch are switched off.
+In the hidden level you rebuild the hall again with your webcam and one hand: **pinch thumb and index finger to grab, open them to drop**. A ghost-hand cursor follows the point between your fingers; when the outline glows gold you are close enough, so open your fingers to drop. Add `?debug` to the URL to see live pinch values while tuning. The rules are the same as the main puzzle; mouse and touch are switched off.
 
 Privacy: the camera starts only after you press "开启摄像头". Video is processed in the browser by Google's MediaPipe hand tracker, vendored in `vendor/mediapipe/` (about 22 MB, loaded only when you open the level). Nothing is recorded, stored, or uploaded. A live preview with a red badge is shown whenever the camera is on, and the camera turns off when you leave, win, or switch away from the page.
 

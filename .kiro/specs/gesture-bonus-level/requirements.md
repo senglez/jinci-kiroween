@@ -88,10 +88,14 @@ The level must protect the player's privacy: video is processed only in the brow
 2. WHEN the player makes the grab gesture over empty space THEN nothing SHALL be picked up.
 3. WHILE a piece is held THE game SHALL keep holding it until the release gesture, even if the pinch distance briefly wavers. The release distance SHALL be larger than the grab distance (hysteresis).
 3a. The pinch distance SHALL be measured relative to the hand's size in the image, so that grabbing works whether the hand is near or far from the camera.
-4. WHEN the player makes the release gesture while holding a piece THEN the game SHALL drop it and apply exactly the main puzzle's drop rules (snap within 90 stage units, support check, messages, attempt counting).
+4. WHEN the player makes the release gesture while holding a piece THEN the game SHALL drop it and apply the main puzzle's drop rules (support check, messages, attempt counting), with the snap distance of Requirement 6.8.
+4a. WHILE a held piece's pinch is opening (the ratio is above 0.37, the middle of the grab/release band) THE piece SHALL stay where it was at the last firmly pinched frame, and the drop SHALL use that position. *(Added after real-webcam testing: opening the fingers moves the point between them, which pulled pieces away from their target just before the drop.)*
+4b. WHILE a piece is held within snap distance of its home THE game SHALL highlight its outline and the cursor as "ready to drop".
 5. A gesture SHALL only count after it has been seen steadily for a short time, so that a single misread frame does not grab or drop.
 6. IF the hand is lost for more than 1 second while holding a piece THEN the piece SHALL return to its tray cell and the game SHALL say the hand was lost.
 7. The hint button, progress counter, timer, and fact cards SHALL work as in the main puzzle.
+8. The snap distance SHALL be 90 stage units for pointer input and 160 stage units for gesture input, because a hand in the air is less precise than a mouse.
+9. WHEN the page URL contains `?debug` THEN the hidden level SHALL show a small panel with the live pinch ratio, gesture state, tracker frame rate, and the held piece's distance to its home, for tuning on real hardware.
 
 ### Requirement 7: Bonus level flow and success
 

@@ -4,7 +4,9 @@
 import { buildPart, buildLanterns, el, PAINT_ORDER, STAGE } from './hall.js';
 import { scatterLayout } from './scatter.js';
 
-const SNAP_DISTANCE = 90; // stage units
+// How close (stage units) a dropped piece must be to its home to snap in. A hand in the
+// air is less precise than a mouse, so gesture input gets a wider radius (Req 6.8).
+export const SNAP_DISTANCE = { pointer: 90, gesture: 160 };
 const CELL_MARGIN = 10; // gap between a loose piece and its cell border
 const MAX_JITTER = 24; // largest random offset inside a cell
 const VIEW_TOP = 80; // nothing is drawn above the chiwen tips (~y 96)
@@ -261,13 +263,30 @@ export class Puzzle {
     st.dx = p.x + this.drag.ox - st.cx;
     st.dy = p.y + this.drag.oy - st.cy;
     this.apply(id);
+    this.ghosts[id].classList.toggle('in-range', this.isInRange()); // "ready to drop" (Req 6.4b)
+  }
+
+  snapDistance() {
+    return SNAP_DISTANCE[this.inputMode] ?? SNAP_DISTANCE.pointer;
+  }
+
+  // Distance (stage units) from the held piece to its home, or null when nothing is held.
+  heldDistance() {
+    if (!this.drag) return null;
+    const st = this.state.get(this.drag.id);
+    return Math.hypot(st.dx, st.dy);
+  }
+
+  isInRange() {
+    const d = this.heldDistance();
+    return d !== null && d < this.snapDistance();
   }
 
   finishDrag() {
     const { id } = this.drag;
     this.drag = null;
     this.nodes[id].classList.remove('dragging');
-    this.ghosts[id].classList.remove('wanted');
+    this.ghosts[id].classList.remove('wanted', 'in-range');
     return id;
   }
 
@@ -320,7 +339,7 @@ export class Puzzle {
 
   drop(piece) {
     const st = this.state.get(piece.id);
-    const near = Math.hypot(st.dx, st.dy) < SNAP_DISTANCE;
+    const near = Math.hypot(st.dx, st.dy) < this.snapDistance();
     if (near) {
       this.tryPlace(piece);
       return;
@@ -329,7 +348,7 @@ export class Puzzle {
     const x = st.cx + st.dx;
     const y = st.cy + st.dy;
     const wrongSlot = this.pieces.find((p) => p.id !== piece.id && !this.placed.has(p.id)
-      && Math.hypot(this.state.get(p.id).cx - x, this.state.get(p.id).cy - y) < SNAP_DISTANCE);
+      && Math.hypot(this.state.get(p.id).cx - x, this.state.get(p.id).cy - y) < this.snapDistance());
     if (wrongSlot) {
       this.attempts++;
       this.sound.buzz();

@@ -1,7 +1,7 @@
 // Turns hand-tracker frames into puzzle drags with a ghost-hand cursor.
 // Spec: gesture-bonus-level, Requirements 5 and 6.
 
-import { mapToUnit, OneEuro, PinchMachine, pinchPoint, pinchRatio } from './gesture.js';
+import { mapToUnit, OneEuro, OPENING_RATIO, PinchMachine, pinchPoint, pinchRatio } from './gesture.js';
 
 export const HAND_LOST_MS = 1000;
 const RESET_FILTER_AFTER_MS = 300; // after a gap, jump to the hand instead of gliding there
@@ -57,22 +57,32 @@ export class GestureInput {
     this.pos = { x, y };
     this.cursor.style.transform = `translate(${x}px, ${y}px)`;
 
-    const event = this.machine.update(pinchRatio(landmarks));
-    if (this.holding) this.puzzle.dragTo(x, y);
+    const ratio = pinchRatio(landmarks);
+    const event = this.machine.update(ratio);
+    const opening = ratio > OPENING_RATIO;
+    this.debug = { ratio, pinched: this.machine.pinched, frozen: !!this.holding && opening };
+    if (this.holding) {
+      // Follow the hand only while the pinch is firm; once it starts opening, the piece
+      // stays at the anchor, and that is where it will be dropped (Req 6.4a).
+      if (!opening) this.anchor = { x, y };
+      this.puzzle.dragTo(this.anchor.x, this.anchor.y);
+    }
     const hover = this.holding ? null : this.puzzle.pieceAt(x, y);
 
     if (event) this.listener.onGesture?.(event);
     if (event === 'grab' && hover && this.puzzle.beginDrag(hover, x, y)) {
       this.holding = hover; // grabbing empty space does nothing (Req 6.2)
+      this.anchor = { x, y };
     } else if (event === 'release' && this.holding) {
       this.holding = null;
-      this.puzzle.endDrag(); // normal drop rules (Req 6.4)
+      this.puzzle.endDrag(); // normal drop rules at the anchor position (Req 6.4)
     }
     // the drop may have been rejected and the puzzle cancelled the drag itself
     if (this.holding && !this.puzzle.isDragging()) this.holding = null;
 
     this.cursor.classList.toggle('pinched', this.machine.pinched);
     this.cursor.classList.toggle('hover', !this.holding && !!hover);
+    this.cursor.classList.toggle('ready', !!this.holding && this.puzzle.isInRange()); // Req 6.4b
   }
 
   noHand(t) {
