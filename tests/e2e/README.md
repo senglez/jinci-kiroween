@@ -11,6 +11,8 @@ Each file is a single `async (page) => { … }` function, the format accepted by
 | `gallery.js` | gallery 3.2 | No download before opening; opens on the current season; paging wraps; keys, swipe, tabs; Escape and focus; portrait fit; English; hidden in bonus mode |
 | `camera-denied.js` | 10.5 | Without a usable camera only "返回" is offered and the camera stays off |
 
+Run the files **one at a time**. They share the browser's `localStorage`, and `unlock.js` installs a fake clock, so running them in parallel makes them interfere with each other.
+
 Set `ROOT` at the top of each file to your checkout path if it is not `/projects/sandbox/repo-jinci`.
 
 The gesture test cannot use a real hand. It calls `window.__jinciBonus.useFakeTracker()` and feeds scripted MediaPipe-style landmarks through the same `GestureInput` code the camera uses. Real webcam play still needs a manual check.
