@@ -3,7 +3,9 @@
 // 2. every content entry in js/data.js has both zh and en text
 // 3. every puzzle `needs` id exists, and the support graph has no cycles
 // 4. every image referenced by the game exists and has a credit entry
-import { readdir, readFile, access } from 'node:fs/promises';
+// 5. the property tests in tools/test.mjs pass
+// 6. the vendored hand tracker files are present (hidden level)
+import { readdir, readFile, access, stat } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
@@ -12,12 +14,20 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const errors = [];
 const fail = (msg) => errors.push(msg);
 
-// 1. syntax
-const jsFiles = (await readdir(join(root, 'js'))).filter((f) => f.endsWith('.js'));
+// 1. syntax (js/ and its sub-folders)
+const jsFiles = (await readdir(join(root, 'js'), { recursive: true })).filter((f) => f.endsWith('.js'));
 for (const f of jsFiles) {
   const src = await readFile(join(root, 'js', f));
   const r = spawnSync(process.execPath, ['--input-type=module', '--check'], { input: src });
   if (r.status !== 0) fail(`js/${f}: syntax error\n${r.stderr.toString().trim()}`);
+}
+
+// 5. property tests for the pure modules (tools/test.mjs)
+let testCount = 0;
+if (!errors.length) {
+  const { results } = await import(join(root, 'tools', 'test.mjs'));
+  testCount = results.length;
+  for (const r of results.filter((x) => !x.ok)) fail(`test "${r.name}" failed: ${r.detail}`);
 }
 
 if (!errors.length) {
@@ -76,8 +86,23 @@ if (!errors.length) {
   }
 }
 
+// 6. vendored hand tracker (see vendor/mediapipe/README.md)
+const VENDORED = [
+  ['vendor/mediapipe/vision_bundle.mjs', 100_000],
+  ['vendor/mediapipe/wasm/vision_wasm_internal.js', 100_000],
+  ['vendor/mediapipe/wasm/vision_wasm_internal.wasm', 10_000_000],
+  ['vendor/mediapipe/hand_landmarker.task', 5_000_000],
+  ['vendor/mediapipe/LICENSE', 10_000],
+];
+for (const [file, minBytes] of VENDORED) {
+  try {
+    const { size } = await stat(join(root, file));
+    if (size < minBytes) fail(`${file}: only ${size} bytes, looks truncated (expected ≥ ${minBytes})`);
+  } catch { fail(`${file}: missing (hidden level needs it)`); }
+}
+
 if (errors.length) {
   console.error(`✗ ${errors.length} problem(s):\n- ${errors.join('\n- ')}`);
   process.exit(2);
 }
-console.log(`✓ ${jsFiles.length} JS files parse; content is bilingual; build order is acyclic; all images are credited.`);
+console.log(`✓ ${jsFiles.length} JS files parse; content is bilingual; build order is acyclic; all images are credited; ${testCount} property tests pass.`);

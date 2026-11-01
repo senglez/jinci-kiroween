@@ -14,7 +14,9 @@ inclusion: always
 - Only use images that are public domain or CC-licensed. Add each new image to `assets/photos/credits.json` and regenerate `js/credits.js`.
 
 ## Code rules
-- Plain ES modules, no build step, no runtime dependencies. Must run from any static host.
+- Plain ES modules, no build step, no runtime dependencies from other hosts. Must run from any static host.
+- Third-party code is allowed only when vendored under `vendor/<name>/`, unmodified, with its licence file and a README listing version, source, and SHA-256. Credit it in `NOTICE.md` and `assets/photos/credits.json`. Load it lazily so the main game's start-up does not change. Today the only vendored package is MediaPipe for the hidden level.
+- Camera input must stay on the device: never upload, store, or log frames or landmarks.
 - The hall is drawn procedurally in SVG (`js/hall.js`, stage 2000×1150). Puzzle pieces are hall parts; `needs` in `PIECES` encodes structural support order.
 - Sound is synthesized with Web Audio. Do not add music files.
 - Keep pointer, touch, and keyboard input working, and honour `prefers-reduced-motion`.

@@ -11,6 +11,16 @@ It is a Northern Song building, first raised in 1023–1032 and rebuilt in 1102.
 4. **Puzzle.** Drag each part onto its glowing outline. The order follows how the building is actually built. A roof can't go up before the brackets that carry it, and the game tells you which supporting part is still missing. Every placed part shows a short fact card. The “Lantern hint” button points to a part that can go up now.
 5. **Success.** The jack-o'-lanterns under the eaves light up, fireworks go off, and you see your time and number of attempts.
 
+Every scatter is a fresh, uniformly random arrangement that never repeats the previous one, so replays can't be solved from memory.
+
+### Hidden level: 鬼手营造 (Ghost-Hand Builder)
+
+If the **first** time you finish in this browser takes under 2 minutes, a hidden level unlocks. Each browser gets one chance; the result is remembered in `localStorage`. Once unlocked, the entrance stays on the title screen.
+
+In the hidden level you rebuild the hall again with your webcam and one hand: **pinch thumb and index finger to grab, open them to drop**. A ghost-hand cursor follows the point between your fingers. The rules are the same as the main puzzle; mouse and touch are switched off.
+
+Privacy: the camera starts only after you press "开启摄像头". Video is processed in the browser by Google's MediaPipe hand tracker, vendored in `vendor/mediapipe/` (about 22 MB, loaded only when you open the level). Nothing is recorded, stored, or uploaded. A live preview with a red badge is shown whenever the camera is on, and the camera turns off when you leave, win, or switch away from the page.
+
 The game is in Chinese and English (toggle at top right, or `?lang=en`). It works with mouse, touch, and keyboard (Tab to a part, Enter to place it), and respects `prefers-reduced-motion`.
 
 ## Run locally
@@ -29,12 +39,15 @@ Check content and code before committing:
 node tools/check.mjs
 ```
 
-It verifies that every JS file parses, all text has Chinese and English, the milestone years run backwards, the puzzle build order has no cycles, and every image shown in the game is credited.
+It verifies that every JS file parses, all text has Chinese and English, the milestone years run backwards, the puzzle build order has no cycles, every image shown in the game is credited, and the vendored hand-tracker files are present. It also runs the property-based tests in `tools/test.mjs` (also runnable on their own with `node tools/test.mjs`): the unlock rule, the pinch gesture state machine, cursor mapping and smoothing, and the random scatter (including a chi-square uniformity test).
+
+End-to-end tests are in `tests/e2e/` (see its README); they run in Playwright and cover the scatter, unlock, gesture flow with scripted hand landmarks, camera errors, and a smoke test of the vendored model.
 
 ## How Kiro is used
 
 - **Spec**: `.kiro/specs/jinci-hall-game/` holds the requirements (EARS acceptance criteria), the design (architecture, support graph, correctness properties), and the task list.
-- **Hook**: `.kiro/hooks/check-on-save.json` runs `node tools/check.mjs` whenever a `js/*.js` file or `index.html` is saved.
+- **Spec-driven feature**: `.kiro/specs/gesture-bonus-level/` was written before any code: requirements, a review round with four decisions (one chance per browser, pinch gesture, no mouse fallback, vendored library), a design, and then 37 tasks implemented in order. The design's correctness properties became the property tests, which were checked by injecting bugs and confirming each was caught.
+- **Hook**: `.kiro/hooks/check-on-save.json` runs `node tools/check.mjs` (including the property tests) whenever a `js/*.js` file or `index.html` is saved.
 - **Steering**: `.kiro/steering/project.md` sets the content, licensing, and code rules.
 - **Powers**: Playwright was used to play-test the full game headlessly on desktop and phone sizes.
 
@@ -51,10 +64,15 @@ js/puzzle.js        drag & drop, structural dependency rules
 js/fx.js            ghost-fire wisps, bats, spark bursts
 js/audio.js         Web Audio bells, wind, drone (no music files)
 js/credits.js       image attribution shown in-game
+js/scatter.js       random scatter layout (pure)
+js/bonus/           hidden level: progress, gesture maths, tracker, input, level flow
+vendor/mediapipe/   vendored hand tracker (Apache-2.0)
+tests/e2e/          Playwright end-to-end tests
 assets/photos/      the 13 images used in the game
 research/           sources, full image catalogue, download tools
 tools/serve.mjs     local static server
 tools/check.mjs     content and code checks (run by the Kiro hook)
+tools/test.mjs      property-based tests, no dependencies
 .kiro/              spec, hook, steering
 ```
 

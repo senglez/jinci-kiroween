@@ -137,7 +137,9 @@ Ratios between 0.30 and 0.45 never change the state. Frames without a hand do no
 - `getUserMedia({ video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }, audio: false })`.
 - Errors map to error codes shown in plain words: `NotAllowedError` → `denied`; `NotFoundError` / `OverconstrainedError` → `nocamera`; `NotReadableError` → `busy`; no `navigator.mediaDevices` → `nocameraapi`; load failures → `unsupported` or `loadfailed`.
 - Detection runs on `requestAnimationFrame`, but only when `video.currentTime` has changed, so no frame is processed twice. Each result is passed to the listener as `{ landmarks: Landmark[] | null, t }`. A rolling FPS value is kept for the debug overlay and the 20 FPS requirement.
-- `stop()` stops every `MediaStreamTrack`, clears `video.srcObject`, cancels the loop, and calls `landmarker.close()`. It is idempotent.
+- `stop()` stops every `MediaStreamTrack`, clears `video.srcObject`, and cancels the loop. It is idempotent.
+- *Changed during implementation:* the loaded landmarker is kept (not `close()`d) so that "再玩一次隐藏关卡" does not reload 22 MB. It holds no camera access and no frames; privacy depends only on the camera tracks, which `stop()` always ends.
+- *Found during implementation:* the puzzle can be built while its scene is hidden, when `getBBox()` returns 0×0. `Puzzle.measure()` re-measures pieces before `assemble()` and `scatter()`.
 
 ## Puzzle changes (`puzzle.js`)
 

@@ -1,4 +1,4 @@
-// Generated from assets/photos/credits.json. Attribution for every image bundled with the game.
+// Generated from assets/photos/credits.json. Attribution for every image and third-party component bundled with the game.
 export const CREDITS = [
   {
     "file": "assets/photos/hall-front.jpg",
@@ -103,5 +103,21 @@ export const CREDITS = [
     "author": "刘大鹏（1857–1942）",
     "license": "Public domain",
     "license_url": ""
+  },
+  {
+    "file": "vendor/mediapipe/vision_bundle.mjs",
+    "source": "https://www.npmjs.com/package/@mediapipe/tasks-vision",
+    "title": "MediaPipe Tasks Vision 1.2.0 (hidden level hand tracking)",
+    "author": "Google / The MediaPipe Authors",
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0"
+  },
+  {
+    "file": "vendor/mediapipe/hand_landmarker.task",
+    "source": "https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker",
+    "title": "MediaPipe Hand Landmarker model (float16 v1)",
+    "author": "Google / The MediaPipe Authors",
+    "license": "Apache-2.0",
+    "license_url": "https://www.apache.org/licenses/LICENSE-2.0"
   }
 ];
