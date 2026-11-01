@@ -117,9 +117,25 @@ The level must protect the player's privacy: video is processed only in the brow
 4. The hand tracker library and model SHALL be under an open-source licence compatible with publishing this repository. Their licence text SHALL be included next to the vendored files and they SHALL be credited in `NOTICE.md` and the in-game credits.
 5. The main game's behaviour, including mouse, touch, and keyboard play, SHALL NOT change.
 
+### Requirement 9: Random scatter every time
+
+**User Story:** As a player who replays, I want the pieces to land in different places each time, so that I solve the puzzle by understanding the building rather than by remembering positions.
+
+This requirement applies to every scatter, in the main game and in the bonus level.
+
+#### Acceptance Criteria
+
+1. WHEN the hall is scattered THEN the game SHALL assign the 9 pieces to tray cells by a uniformly random permutation, so that every arrangement is equally likely.
+2. WHEN a scatter follows an earlier one in the same page load THEN its arrangement SHALL differ from the previous arrangement.
+3. WHEN the hall is scattered THEN each piece SHALL get a random tilt between −8° and +8° and a random offset inside its cell, and SHALL stay fully inside its cell.
+4. WHEN the hall is scattered THEN the order in which pieces fly out and the direction each piece is lifted SHALL be random.
+5. WHEN the tray layout changes between landscape and portrait THEN each loose piece SHALL keep its assigned cell number.
+6. The random choices SHALL come from a random-number source that can be replaced in tests, and the layout SHALL be computed by a pure function.
+
 ## Decisions from review
 
 1. Unlock is one chance per browser, remembered in `localStorage` (Requirement 1).
 2. Grab is a thumb–index pinch, not a fist (Requirements 4–6).
 3. Without a usable camera or tracker the only option is "返回"; there is no mouse fallback (Requirement 3).
 4. The hand tracker library and model are vendored into the repository, not loaded from a CDN (Requirement 8).
+5. Every scatter is a fresh uniform shuffle that differs from the previous one, in both the main game and the bonus level (Requirement 9).

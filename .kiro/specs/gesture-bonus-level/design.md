@@ -24,13 +24,14 @@ Everything runs in the browser. No frame or landmark leaves the page.
 | `js/bonus/input.js` | browser | `GestureInput`: ghost cursor, hit-testing, drives the Puzzle drag API |
 | `js/bonus/level.js` | browser | `BonusLevel`: screens (privacy, loading, error, tutorial, play, win), exit, visibility |
 | `vendor/mediapipe/` | vendored | `vision_bundle.mjs`, `wasm/vision_wasm_internal.{js,wasm}`, `hand_landmarker.task`, `LICENSE` |
-| `tools/test.mjs` | test | Property-based tests for the two pure modules (no dependencies) |
+| `js/scatter.js` | pure | Random scatter layout shared by the main game and the bonus level |
+| `tools/test.mjs` | test | Property-based tests for the three pure modules (no dependencies) |
 
 "Pure" modules import nothing from the DOM, so Node can import them in tests and in `tools/check.mjs`.
 
 Changes to existing files:
 
-- `js/puzzle.js`: extract the drag logic into public methods and add an input mode (below).
+- `js/puzzle.js`: extract the drag logic into public methods, add an input mode (below), and take the scatter layout from `js/scatter.js` instead of the biased `sort(() => Math.random() - 0.5)`.
 - `js/main.js`: record progress on win, show the unlock reveal, show the title-screen entrance, start `BonusLevel`.
 - `js/data.js`: new bilingual strings under `UI.bonus*`.
 - `index.html` / `css/style.css`: bonus overlays, camera preview, ghost cursor, ghost-green theme (`#scene-game.bonus`).
@@ -76,6 +77,34 @@ export function afterCompletion(prev, completionMs) {
 ```
 
 `loadProgress()` / `saveProgress()` wrap storage in `try/catch`. If storage throws, they fall back to a module-level in-memory value, which gives the per-page-load behaviour of Requirement 1.6. A corrupt stored value is treated as empty progress. `afterCompletion` returns `{ progress, justUnlocked }` to `main.js` through a thin wrapper so the dialog knows whether to play the reveal.
+
+## Random scatter (`scatter.js`)
+
+Today `Puzzle.scatter()` shuffles with `ids.sort(() => Math.random() - 0.5)`. A random comparator gives a biased order (some arrangements come up far more often than others), and nothing stops two scatters in a row from being identical. The layout moves into a pure module:
+
+```js
+// rng: () => number in [0, 1). Defaults to Math.random; tests pass a seeded generator.
+export function shuffle(items, rng) { /* Fisher–Yates: for i from n−1 down to 1, swap i with floor(rng()·(i+1)) */ }
+
+export function scatterLayout(ids, previousOrder, rng = Math.random) {
+  let order = shuffle(ids, rng);
+  while (previousOrder && sameOrder(order, previousOrder)) order = shuffle(ids, rng); // Req 9.2
+  return {
+    order,                                   // order[i] goes to tray cell i
+    pieces: Object.fromEntries(order.map((id, i) => [id, {
+      slot: i,
+      tilt: (rng() * 2 - 1) * 8,             // degrees, Req 9.3
+      jitter: { x: rng() * 2 - 1, y: rng() * 2 - 1 },  // −1…1, scaled to the free space in the cell
+      lift: { dx: (rng() * 2 - 1) * 80, dy: -40 - rng() * 60 },  // Req 9.4
+    }])),
+    launch: shuffle(ids, rng),               // fly-out order, Req 9.4
+  };
+}
+```
+
+With 9 pieces there are 9! = 362,880 arrangements, so the reshuffle loop almost never runs more than once.
+
+`Puzzle` keeps the last `order` for the "differs from previous" rule. `trayTarget(id)` turns `jitter` into stage units: after the piece is scaled to fit its cell, the free space left on each side is `(cellW − 90 − w·s) / 2` horizontally and `(rowH − 50 − h·s) / 2` vertically. The offset is `jitter × min(free space, 24)`, so the piece never crosses its cell border (Req 9.3). The tilt is applied on top, and the 45/25-unit cell padding leaves room for it. Slots are cell numbers, so a landscape/portrait relayout keeps each piece's cell (Req 9.5).
 
 ## Gesture recognition (`gesture.js`)
 
@@ -181,6 +210,9 @@ Tested by `tools/test.mjs` with a small seeded random generator (hundreds of cas
 5. **Debounce**: a run of fewer than 3 qualifying frames never produces an event. (Req 6.5)
 6. **Mapping**: for any input point, including outside `[0, 1]`, the mapped point is inside `[0, 1]²`, and the mapping is monotonic and mirrored on x. (Req 5.1, 5.5)
 7. **Smoothing**: for a constant input, the One-Euro output converges to that input. (Req 5.2)
+8. **Valid layout**: for any seed and any previous order, `scatterLayout` puts every piece in exactly one cell `0…8`, tilts lie in `[−8°, 8°]`, and jitters lie in `[−1, 1]`. (Req 9.1, 9.3)
+9. **Never repeats**: for any seed, the new order differs from the given previous order. (Req 9.2)
+10. **Uniform**: over 18,000 seeded shuffles, the cell each piece lands in passes a chi-square test against the uniform distribution (8 degrees of freedom, p > 0.001). The test fails on the old random-comparator shuffle. (Req 9.1)
 
 `tools/check.mjs` runs these tests, so the existing `check-on-save` hook covers the new code.
 
@@ -189,6 +221,7 @@ Tested by `tools/test.mjs` with a small seeded random generator (hundreds of cas
 - **Property tests**: above, run on every save by the hook.
 - **Model smoke test** (Playwright, headless Chromium): load the vendored bundle, wasm, and model from the local server with the CPU delegate, run `detectForVideo` on a blank canvas, and assert it returns without error and makes no request to another host.
 - **Gesture flow test** (Playwright): a camera cannot be faked with a real hand, so `level.js` exposes `window.__jinciBonus.feed(landmarks | null)` in the same way `__jinciPuzzle` is exposed. The test drives the tutorial and builds all 9 pieces with scripted landmark frames, and also checks: grab over empty space does nothing, an out-of-order drop is rejected, losing the hand for > 1 s returns the piece, and Escape stops the camera.
+- **Scatter test** (Playwright): scatter twice in one page load and assert the two `order` arrays differ and every piece's bounding box lies inside its tray cell, in both landscape and portrait.
 - **Unlock test** (Playwright): win under 2 minutes in a fresh context → reveal shown and title entrance after reload; win again in the same context with a slow time → still unlocked; fresh context with a slow first win, then a fast second win → stays locked.
 - **Error screens**: deny camera permission in the Playwright context and check only "返回" is offered.
 - **Manual check you need to do**: real webcam play on your laptop, since automated tests cannot wave a hand. Thresholds may need tuning after that.
