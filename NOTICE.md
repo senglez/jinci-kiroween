@@ -9,4 +9,15 @@ Images in `assets/photos/` and `research/` are **not** covered by the MIT Licens
 
 Author, licence, and source link for every image used in the game are in `assets/photos/credits.json` and the in-game credits. The full research catalogue is in `research/IMAGES.md`.
 
+## Hand tracking (hidden level)
+
+`vendor/mediapipe/` contains unmodified files from Google's MediaPipe, under the Apache License 2.0 (text in `vendor/mediapipe/LICENSE`):
+
+- `@mediapipe/tasks-vision` 1.2.0: `vision_bundle.mjs` and `wasm/vision_wasm_internal.{js,wasm}`
+- Hand Landmarker model `hand_landmarker.task` (float16 v1)
+
+Versions, sources, and checksums are in `vendor/mediapipe/README.md`. Camera video is processed only in the browser and is never uploaded or stored.
+
+## Sound
+
 All sound is synthesized in the browser; no audio files are included.

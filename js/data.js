@@ -191,4 +191,58 @@ export const UI = {
   credits: { zh: '图片与资料来源', en: 'Image & source credits' },
   close: { zh: '关闭', en: 'Close' },
   sound: { zh: '声音', en: 'Sound' },
+
+  // ---------- 晋祠美景 gallery (spec: jinci-gallery) ----------
+  gallery: { zh: '晋祠美景', en: 'Jinci in four seasons' },
+  galleryPrev: { zh: '上一张', en: 'Previous photo' },
+  galleryNext: { zh: '下一张', en: 'Next photo' },
+
+  // ---------- hidden level 鬼手营造 (spec: gesture-bonus-level) ----------
+  bonusUnlocked: { zh: '隐藏关卡已解锁：鬼手营造', en: 'Hidden level unlocked: Ghost-Hand Builder' },
+  bonusUnlockedText: {
+    zh: '你两分钟内就重建了圣母殿。千年前的匠人想借你的手，凌空再搭一次。',
+    en: 'You rebuilt the hall in under two minutes. The builders of a thousand years ago want to borrow your hand and build it once more, in mid-air.',
+  },
+  bonusEnter: { zh: '进入隐藏关卡', en: 'Enter the hidden level' },
+  bonusTitle: { zh: '鬼手营造', en: 'Ghost-Hand Builder' },
+  bonusGoal: { zh: '捏住构件，带回原位，用一只手重建圣母殿', en: 'Pinch a part, carry it home, rebuild the hall with one hand' },
+  privacyTitle: { zh: '借你的手一用', en: 'Lend us your hand' },
+  privacyText: {
+    zh: '这一关用电脑摄像头识别你的一只手。画面只在这个浏览器里处理，不会录制、保存或上传。离开这一关，摄像头立即关闭。',
+    en: 'This level uses your computer’s camera to follow one hand. The video is processed only in this browser. Nothing is recorded, saved, or uploaded. The camera turns off as soon as you leave the level.',
+  },
+  cameraOffHidden: {
+    zh: '你切换了页面，摄像头已经关闭。要继续，请再次开启。',
+    en: 'You switched away, so the camera turned off. Turn it on again to continue.',
+  },
+  cameraOn: { zh: '开启摄像头', en: 'Turn on camera' },
+  back: { zh: '返回', en: 'Back' },
+  loadingCamera: { zh: '正在打开摄像头……', en: 'Opening the camera…' },
+  loadingModel: { zh: '正在召唤鬼手（加载手势识别，约 22 MB）……', en: 'Summoning the ghost hand (loading hand tracking, about 22 MB)…' },
+  errTitle: { zh: '鬼手没能现身', en: 'The ghost hand could not appear' },
+  err_nocameraapi: { zh: '这个浏览器不支持摄像头。', en: 'This browser cannot use a camera.' },
+  err_denied: {
+    zh: '你没有允许使用摄像头。可以点地址栏里的摄像头图标，改为允许后再试。',
+    en: 'Camera access was not allowed. You can allow it from the camera icon in the address bar and try again.',
+  },
+  err_nocamera: { zh: '没有找到可用的摄像头。', en: 'No usable camera was found.' },
+  err_busy: { zh: '摄像头正被别的程序占用。关掉那个程序后再试。', en: 'Another app is using the camera. Close it and try again.' },
+  err_unsupported: { zh: '这个浏览器太旧，无法运行手势识别。请换用新版 Chrome、Edge、Firefox 或 Safari。', en: 'This browser is too old to run hand tracking. Please use a current Chrome, Edge, Firefox, or Safari.' },
+  err_loadfailed: { zh: '手势识别加载失败。请刷新页面后再试。', en: 'Hand tracking failed to load. Please reload the page and try again.' },
+  tutTitle: { zh: '先练一练', en: 'Quick practice' },
+  tutHand: { zh: '把一只手举到摄像头前', en: 'Hold one hand up to the camera' },
+  tutPinch: { zh: '拇指和食指捏在一起：抓起', en: 'Pinch thumb and index finger together: grab' },
+  tutRelease: { zh: '再把两指分开：放下', en: 'Open them again: drop' },
+  tutDone: { zh: '很好！阴风要来了……', en: 'Well done! Here comes the ghost wind…' },
+  noHand: { zh: '看不到你的手', en: 'Can’t see your hand' },
+  handLost: { zh: '手不见了，构件回到了托盘', en: 'Hand lost. The part went back to the tray.' },
+  exit: { zh: '退出', en: 'Exit' },
+  camBadge: { zh: '摄像头开启', en: 'Camera on' },
+  bonusWinTitle: { zh: '鬼手匠师 · 隐藏关卡完成！', en: 'Ghost-Hand Master! Hidden level complete!' },
+  bonusWinText: {
+    zh: '你只用一只手，凌空把圣母殿又搭了一遍。摄像头已经关闭。',
+    en: 'With one hand, in mid-air, you built the hall once more. The camera is now off.',
+  },
+  bonusAgain: { zh: '再玩一次隐藏关卡', en: 'Play the hidden level again' },
+  toTitle: { zh: '回到开始', en: 'Back to start' },
 };

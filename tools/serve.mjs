@@ -9,6 +9,8 @@ const port = Number(process.argv[2] || 8080);
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json', '.jpg': 'image/jpeg', '.png': 'image/png', '.svg': 'image/svg+xml', '.md': 'text/markdown; charset=utf-8',
+  // hidden level: vendored MediaPipe hand tracker
+  '.mjs': 'text/javascript; charset=utf-8', '.wasm': 'application/wasm', '.task': 'application/octet-stream',
 };
 
 createServer(async (req, res) => {

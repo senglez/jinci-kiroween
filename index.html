@@ -25,6 +25,7 @@
   <nav class="controls">
     <button id="btn-lang" type="button" aria-label="Switch language">EN</button>
     <button id="btn-sound" type="button" aria-pressed="true"><span data-i18n="sound"></span> ♪</button>
+    <button id="btn-gallery" type="button" data-i18n="gallery"></button>
     <button id="btn-credits" type="button" data-i18n="credits"></button>
   </nav>
 
@@ -35,6 +36,7 @@
       <h1 data-i18n="title"></h1>
       <p class="subtitle" data-i18n="subtitle"></p>
       <button id="btn-start" class="btn-primary" type="button" data-i18n="start"></button>
+      <div><button id="btn-bonus" class="btn-bonus js-enter-bonus" type="button" data-i18n="bonusEnter" hidden></button></div>
     </div>
   </section>
 
@@ -66,15 +68,26 @@
   <!-- 4. the puzzle -->
   <section id="scene-game" class="scene">
     <header class="hud">
-      <div class="hud-goal" data-i18n="goal"></div>
+      <div class="hud-goal"><span class="bonus-only bonus-badge" data-i18n="bonusTitle"></span> <span id="hud-goal" data-i18n="goal"></span></div>
       <div class="hud-stats">
         <span id="progress">0 / 9</span>
         <span id="timer">00:00</span>
         <button id="btn-hint" class="btn-ghost" type="button" data-i18n="hint"></button>
+        <button id="btn-exit-bonus" class="btn-ghost bonus-only" type="button" data-i18n="exit"></button>
       </div>
     </header>
     <svg id="stage" role="application" aria-label="圣母殿拼装 Hall puzzle"></svg>
     <div id="toast" class="toast" role="status"></div>
+    <div id="hand-status" class="hand-status" role="status" hidden data-i18n="noHand"></div>
+    <aside id="tutorial" class="tutorial" aria-live="polite" hidden>
+      <h3 data-i18n="tutTitle"></h3>
+      <ol>
+        <li data-step="hand" data-i18n="tutHand"></li>
+        <li data-step="pinch" data-i18n="tutPinch"></li>
+        <li data-step="release" data-i18n="tutRelease"></li>
+      </ol>
+      <button id="btn-tut-skip" class="btn-ghost" type="button" data-i18n="skip"></button>
+    </aside>
     <aside id="fact" class="fact" role="status">
       <h3 id="fact-title"></h3>
       <p id="fact-text"></p>
@@ -84,6 +97,46 @@
   <canvas id="embers" aria-hidden="true"></canvas>
   <div id="flash" aria-hidden="true"></div>
 
+  <!-- hidden level: live camera preview (always visible while the camera is on) and ghost-hand cursor -->
+  <div id="cam-wrap" class="cam-wrap" hidden>
+    <video id="cam" playsinline muted aria-label="Camera preview"></video>
+    <span class="cam-badge"><span class="cam-dot" aria-hidden="true"></span><span data-i18n="camBadge"></span></span>
+  </div>
+  <div id="ghost-hand" class="ghost-hand" aria-hidden="true">
+    <svg viewBox="-50 -60 100 110">
+      <circle class="gh-ring" r="34"></circle>
+      <path class="gh-hand" d="M-6 40 C-26 36 -32 18 -30 4 L-34 -16 C-35 -24 -25 -26 -23 -18 L-19 -4 L-20 -38 C-20 -46 -10 -46 -10 -38 L-9 -10 L-6 -46 C-5 -54 5 -54 5 -46 L5 -10 L9 -40 C10 -48 20 -47 19 -39 L16 -6 L22 -28 C24 -35 33 -32 31 -24 L24 10 C21 30 10 42 -6 40 Z"></path>
+      <circle class="gh-pinch" r="7"></circle>
+    </svg>
+  </div>
+
+  <!-- hidden level: privacy / loading / error screens -->
+  <div id="bonus-panel" class="modal" role="dialog" aria-modal="true" aria-labelledby="bonus-panel-title" hidden>
+    <div class="modal-box bonus-box">
+      <div class="title-lantern ghost-lantern" aria-hidden="true"></div>
+      <section data-screen="privacy">
+        <h2 id="bonus-panel-title" data-i18n="privacyTitle"></h2>
+        <p data-i18n="privacyText"></p>
+        <p id="privacy-hidden-note" class="note" data-i18n="cameraOffHidden" hidden></p>
+        <div class="modal-actions">
+          <button id="btn-camera-on" class="btn-primary btn-ghostly" type="button" data-i18n="cameraOn"></button>
+          <button class="btn-ghost js-bonus-back" type="button" data-i18n="back"></button>
+        </div>
+      </section>
+      <section data-screen="loading" hidden>
+        <h2 data-i18n="bonusTitle"></h2>
+        <p id="bonus-loading-text" class="loading-text"></p>
+      </section>
+      <section data-screen="error" hidden>
+        <h2 data-i18n="errTitle"></h2>
+        <p id="bonus-error-text"></p>
+        <div class="modal-actions">
+          <button class="btn-ghost js-bonus-back" type="button" data-i18n="back"></button>
+        </div>
+      </section>
+    </div>
+  </div>
+
   <!-- success -->
   <div id="win" class="modal" role="dialog" aria-modal="true" aria-labelledby="win-title" hidden>
     <div class="modal-box">
@@ -91,6 +144,11 @@
       <h2 id="win-title" data-i18n="winTitle"></h2>
       <p data-i18n="winText"></p>
       <p class="win-stats"><span data-i18n="time"></span> <b id="win-time"></b> · <span data-i18n="moves"></span> <b id="win-moves"></b></p>
+      <div id="unlock-reveal" class="unlock-reveal" hidden>
+        <h3 data-i18n="bonusUnlocked"></h3>
+        <p data-i18n="bonusUnlockedText"></p>
+        <button class="btn-bonus js-enter-bonus" type="button" data-i18n="bonusEnter"></button>
+      </div>
       <div class="win-gallery">
         <img src="assets/photos/dragon-column.jpg" alt="盘龙柱 dragon column">
         <img src="assets/photos/dougong.jpg" alt="斗拱 brackets">
@@ -101,6 +159,39 @@
         <button id="btn-again" class="btn-primary" type="button" data-i18n="again"></button>
         <button class="btn-ghost js-open-credits" type="button" data-i18n="credits"></button>
       </div>
+    </div>
+  </div>
+
+  <!-- hidden level success -->
+  <div id="bonus-win" class="modal" role="dialog" aria-modal="true" aria-labelledby="bonus-win-title" hidden>
+    <div class="modal-box bonus-box">
+      <div class="title-lantern ghost-lantern win-lantern" aria-hidden="true"></div>
+      <h2 id="bonus-win-title" data-i18n="bonusWinTitle"></h2>
+      <p data-i18n="bonusWinText"></p>
+      <p class="win-stats"><span data-i18n="time"></span> <b id="bonus-win-time"></b> · <span data-i18n="moves"></span> <b id="bonus-win-moves"></b></p>
+      <div class="modal-actions">
+        <button id="btn-bonus-again" class="btn-primary btn-ghostly" type="button" data-i18n="bonusAgain"></button>
+        <button id="btn-bonus-title" class="btn-ghost" type="button" data-i18n="toTitle"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 晋祠美景 seasonal gallery -->
+  <div id="gallery" class="modal" role="dialog" aria-modal="true" aria-labelledby="gallery-title" hidden>
+    <div class="modal-box gallery-box">
+      <div class="gallery-head">
+        <h2 id="gallery-title" data-i18n="gallery"></h2>
+        <button id="btn-gallery-close" class="btn-ghost gallery-close" type="button">×</button>
+      </div>
+      <div id="gallery-tabs" class="gallery-tabs" role="group" aria-label="Seasons"></div>
+      <div id="gallery-frame" class="gallery-frame loading">
+        <button id="btn-gallery-prev" class="gallery-nav prev" type="button">‹</button>
+        <img id="gallery-img" alt="" draggable="false">
+        <button id="btn-gallery-next" class="gallery-nav next" type="button">›</button>
+      </div>
+      <p class="gallery-meta"><span id="gallery-season"></span> <span id="gallery-counter" class="gallery-counter"></span></p>
+      <p id="gallery-caption" class="gallery-caption"></p>
+      <p class="gallery-credit"><a id="gallery-credit" target="_blank" rel="noopener"></a> · Wikimedia Commons</p>
     </div>
   </div>
 

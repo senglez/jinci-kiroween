@@ -295,3 +295,150 @@ h1 {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* ---------- hidden level 鬼手营造 ---------- */
+:root { --ghost-green: #6dffb4; --ghost-green-2: #2bd98a; }
+
+.btn-bonus {
+  margin-top: 18px; font-family: var(--font-title); font-size: clamp(18px, 2.6vw, 24px); letter-spacing: .08em;
+  color: #04170e; background: linear-gradient(180deg, #b6ffd9, var(--ghost-green-2));
+  border: 0; border-radius: 999px; padding: 10px 28px;
+  box-shadow: 0 0 22px rgba(109, 255, 180, .75), inset 0 -3px 0 rgba(0, 0, 0, .2);
+  animation: ghost-pulse 2.2s ease-in-out infinite;
+}
+.btn-bonus:focus-visible { outline: 3px solid var(--lantern-2); outline-offset: 4px; }
+.btn-ghostly { background: linear-gradient(180deg, #b6ffd9, var(--ghost-green-2)); color: #04170e; box-shadow: 0 0 24px rgba(109, 255, 180, .7); animation: ghost-pulse 2.2s ease-in-out infinite; }
+@keyframes ghost-pulse { 50% { box-shadow: 0 0 44px rgba(109, 255, 180, 1), inset 0 -3px 0 rgba(0, 0, 0, .2); } }
+
+.unlock-reveal {
+  margin: 14px 0 4px; padding: 14px; border-radius: 14px;
+  border: 1px solid rgba(109, 255, 180, .7); background: rgba(10, 40, 28, .55);
+}
+.unlock-reveal h3 { margin: 0 0 6px; font-family: var(--font-title); font-weight: 400; font-size: 26px; color: var(--ghost-green); text-shadow: 0 0 14px rgba(109, 255, 180, .8); }
+.unlock-reveal p { margin: 0; font-size: 14px; line-height: 1.6; }
+.unlock-reveal.just { animation: ghost-appear 1.6s ease-out both; }
+@keyframes ghost-appear {
+  0% { opacity: 0; transform: scale(.9); filter: blur(6px); }
+  30% { opacity: 1; } 38% { opacity: .2; } 46% { opacity: 1; } 54% { opacity: .4; }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+
+.ghost-lantern {
+  background: radial-gradient(circle at 50% 45%, #e6fff2, var(--ghost-green) 55%, #0d6b44);
+  box-shadow: 0 0 40px 10px rgba(109, 255, 180, .55);
+}
+.bonus-box { border-color: rgba(109, 255, 180, .6); box-shadow: 0 0 60px rgba(109, 255, 180, .3); }
+.bonus-box h2 { color: var(--ghost-green); text-shadow: 0 0 18px rgba(109, 255, 180, .7); }
+.bonus-box .note { color: var(--lantern-2); }
+.loading-text::after { content: ''; display: inline-block; width: 1em; animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { 0% { content: ''; } 25% { content: '·'; } 50% { content: '··'; } 75% { content: '···'; } }
+
+/* bonus theme on the game scene */
+.bonus-only { display: none; }
+body.bonus .bonus-only { display: inline-block; }
+.bonus-badge {
+  font-size: .8em; padding: 2px 10px; margin-right: 6px; border-radius: 999px;
+  color: #04170e; background: var(--ghost-green); text-shadow: none;
+}
+body.bonus .hud-goal { color: var(--ghost-green); text-shadow: 0 0 10px rgba(109, 255, 180, .7); }
+body.bonus #sky { background: radial-gradient(ellipse at 70% 10%, #123a32 0%, #0b1f22 35%, #050b10 75%); }
+body.bonus .moon { box-shadow: 0 0 60px 20px rgba(109, 255, 180, .35), 0 0 160px 60px rgba(43, 217, 138, .18); }
+body.bonus #stage .ghost * { stroke: rgba(109, 255, 180, .35) !important; }
+body.bonus #stage .ghost.wanted * { stroke: var(--ghost-green) !important; }
+body.bonus #stage .tray-cell { fill: rgba(109, 255, 180, .06); stroke: rgba(109, 255, 180, .35); }
+body.bonus #stage .lanterns.lit .lantern-body { fill: var(--ghost-green); }
+#stage.gesture-mode .piece { cursor: default; }
+
+/* camera preview: always shown while the camera is on (Req 2.4) */
+.cam-wrap {
+  position: fixed; right: 12px; bottom: 12px; z-index: 55; width: 176px; pointer-events: none;
+  border: 2px solid rgba(109, 255, 180, .7); border-radius: 12px; overflow: hidden; background: #000;
+  box-shadow: 0 0 20px rgba(109, 255, 180, .4);
+}
+.cam-wrap video { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transform: scaleX(-1); }
+.cam-badge {
+  position: absolute; left: 6px; top: 6px; display: flex; gap: 5px; align-items: center;
+  padding: 2px 8px; border-radius: 999px; font-size: 12px; background: rgba(0, 0, 0, .65); color: #fff;
+}
+.cam-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff3b3b; animation: blink 1.2s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+
+/* ghost-hand cursor */
+.ghost-hand {
+  position: fixed; left: 0; top: 0; z-index: 45; width: 84px; height: 92px; margin: -46px 0 0 -42px;
+  pointer-events: none; opacity: 0; transition: opacity .3s; will-change: transform;
+  filter: drop-shadow(0 0 10px rgba(109, 255, 180, .9));
+}
+.ghost-hand.visible { opacity: 1; }
+.ghost-hand svg { width: 100%; height: 100%; overflow: visible; }
+.ghost-hand .gh-hand { fill: rgba(109, 255, 180, .22); stroke: var(--ghost-green); stroke-width: 3; transition: transform .15s; transform-origin: 0 0; }
+.ghost-hand .gh-ring { fill: none; stroke: var(--lantern-2); stroke-width: 3; stroke-dasharray: 8 6; opacity: 0; transition: opacity .2s; }
+.ghost-hand .gh-pinch { fill: var(--ghost-green); opacity: .4; transition: transform .15s, opacity .15s; }
+.ghost-hand.hover .gh-ring { opacity: 1; animation: spin 3s linear infinite; }
+.ghost-hand.pinched .gh-hand { transform: scale(.8); fill: rgba(109, 255, 180, .45); }
+.ghost-hand.pinched .gh-pinch { transform: scale(1.6); opacity: 1; fill: #fff; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.hand-status {
+  position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 3; pointer-events: none;
+  padding: 8px 16px; border-radius: 999px; background: rgba(5, 20, 14, .85);
+  border: 1px solid var(--ghost-green); color: var(--ghost-green); animation: ghost-flicker 2s infinite;
+}
+
+.tutorial {
+  position: absolute; top: 70px; left: 50%; transform: translateX(-50%); z-index: 3; width: min(420px, 92vw);
+  padding: 14px 18px; border-radius: 14px; background: rgba(5, 20, 14, .9); border: 1px solid var(--ghost-green);
+  box-shadow: 0 0 30px rgba(109, 255, 180, .35); pointer-events: none;
+}
+.tutorial h3 { margin: 0 0 6px; font-family: var(--font-title); font-weight: 400; color: var(--ghost-green); font-size: 24px; }
+.tutorial ol { margin: 0 0 10px; padding-left: 0; list-style: none; line-height: 1.9; }
+.tutorial li::before { content: '○ '; color: var(--ghost-green); }
+.tutorial li.done { color: var(--ghost-green); }
+.tutorial li.done::before { content: '✓ '; }
+.tutorial li.current { font-weight: 700; }
+.tutorial button { pointer-events: auto; }
+
+/* ---------- 晋祠美景 seasonal gallery ---------- */
+body.bonus #btn-gallery { display: none; } /* never leave the camera running behind the gallery */
+.gallery-box { width: min(1100px, 100%); max-height: 96vh; padding: 16px 20px 14px; text-align: center; }
+.gallery-head { display: flex; align-items: center; justify-content: center; position: relative; }
+.gallery-head h2 { margin: 0 0 6px; }
+.gallery-close { position: absolute; right: 0; top: 0; font-size: 24px; line-height: 1; padding: 4px 12px 6px; }
+.gallery-tabs { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+.gallery-tab {
+  font-family: var(--font-title); font-size: 20px; padding: 4px 16px; border-radius: 999px;
+  color: var(--paper); background: rgba(20, 10, 40, .6); border: 1px solid rgba(255, 195, 92, .4);
+}
+.gallery-tab.active { color: #2a1003; background: linear-gradient(180deg, var(--lantern-2), var(--lantern)); box-shadow: 0 0 16px rgba(255, 138, 31, .6); }
+.gallery-tab:focus-visible { outline: 2px solid var(--ghost); outline-offset: 2px; }
+.gallery-frame {
+  position: relative; display: grid; place-items: center; height: min(66vh, 620px);
+  border-radius: 14px; overflow: hidden; background: #07040d;
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, .8), 0 0 24px rgba(255, 138, 31, .25); touch-action: pan-y;
+}
+.gallery-frame img { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; transition: opacity .25s; }
+.gallery-frame.loading img { opacity: .15; }
+.gallery-frame.loading::after {
+  content: ''; position: absolute; width: 46px; height: 58px; border-radius: 45%;
+  background: radial-gradient(circle at 50% 45%, var(--lantern-2), var(--lantern) 55%, #a33a00);
+  box-shadow: 0 0 30px 8px rgba(255, 138, 31, .6); animation: pulse 1s ease-in-out infinite;
+}
+.gallery-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 1; width: 52px; height: 52px; border-radius: 50%;
+  font-size: 34px; line-height: 1; color: #2a1003; border: 0;
+  background: linear-gradient(180deg, var(--lantern-2), var(--lantern)); box-shadow: 0 0 18px rgba(255, 138, 31, .7);
+}
+.gallery-nav.prev { left: 10px; }
+.gallery-nav.next { right: 10px; }
+.gallery-nav:focus-visible { outline: 3px solid var(--ghost); outline-offset: 3px; }
+.gallery-meta { margin: 10px 0 2px; color: var(--lantern-2); font-family: var(--font-title); font-size: 20px; }
+.gallery-counter { margin-left: 10px; color: var(--ghost); font-family: var(--font-body); font-size: 15px; font-variant-numeric: tabular-nums; }
+.gallery-caption { margin: 0; font-size: 16px; }
+.gallery-credit { margin: 4px 0 0; font-size: 12px; opacity: .75; }
+.gallery-credit a { color: var(--lantern-2); }
+@media (max-width: 700px) {
+  .gallery-box { padding: 12px 10px; }
+  .gallery-frame { height: min(52vh, calc((100vw - 40px) * .8)); }
+  .gallery-nav { width: 44px; height: 44px; font-size: 28px; }
+  .controls { flex-wrap: wrap; justify-content: flex-end; max-width: 92vw; }
+}

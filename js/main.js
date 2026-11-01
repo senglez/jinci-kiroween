@@ -6,13 +6,29 @@ import { Warp } from './warp.js';
 import { Embers, spawnBats } from './fx.js';
 import { Sound } from './audio.js';
 import { Puzzle } from './puzzle.js';
+import { createProgressStore } from './bonus/progress.js';
+import { BonusLevel } from './bonus/level.js';
+import { GalleryViewer } from './gallery.js';
+import { GALLERY, SEASONS } from './gallery-data.js';
 
 const $ = (sel) => document.querySelector(sel);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// localStorage can be missing or throw (e.g. some private windows); never let that break the game.
+const storage = (() => {
+  try {
+    const s = window.localStorage;
+    s.getItem('jinci-lang');
+    return s;
+  } catch {
+    return null;
+  }
+})();
+const progressStore = createProgressStore(storage);
+
 // Chinese first; ?lang=en or the toggle switches to English.
-let lang = new URLSearchParams(location.search).get('lang') || localStorage.getItem('jinci-lang') || 'zh';
+let lang = new URLSearchParams(location.search).get('lang') || storage?.getItem('jinci-lang') || 'zh';
 const t = (entry) => entry[lang] ?? entry.zh;
 
 const sound = new Sound();
@@ -30,10 +46,29 @@ function renderTexts() {
   $('#btn-lang').textContent = lang === 'zh' ? 'EN' : '中文';
   if (currentMilestone) fillCard(currentMilestone);
   renderCredits();
+  gallery?.renderTexts();
+}
+
+// ---------- 晋祠美景 gallery ----------
+let gallery = null;
+function setupGallery() {
+  gallery = new GalleryViewer({
+    items: GALLERY,
+    seasons: SEASONS,
+    t: (entry) => t(entry),
+    labels: { prev: UI.galleryPrev, next: UI.galleryNext, close: UI.close },
+    els: {
+      dialog: $('#gallery'), img: $('#gallery-img'), caption: $('#gallery-caption'), season: $('#gallery-season'),
+      counter: $('#gallery-counter'), credit: $('#gallery-credit'), prev: $('#btn-gallery-prev'),
+      next: $('#btn-gallery-next'), close: $('#btn-gallery-close'), tabs: $('#gallery-tabs'), frame: $('#gallery-frame'),
+    },
+  });
+  $('#btn-gallery').addEventListener('click', (e) => gallery.open(e.currentTarget));
+  window.__jinciGallery = gallery; // for automated play-tests
 }
 $('#btn-lang').addEventListener('click', () => {
   lang = lang === 'zh' ? 'en' : 'zh';
-  localStorage.setItem('jinci-lang', lang);
+  try { storage?.setItem('jinci-lang', lang); } catch { /* storage blocked */ }
   renderTexts();
 });
 
@@ -181,9 +216,12 @@ async function reveal() {
   await sleep(1600);
 }
 
-async function playPuzzle() {
-  await show('game');
-  if (!puzzle) {
+let mode = 'main'; // 'main' or 'bonus'
+let finishedAt = 0;
+let lastCompletion = null; // { progress, justUnlocked } from the latest main-game win
+
+function ensurePuzzle(create = true) {
+  if (!puzzle && create) {
     puzzle = new Puzzle($('#stage'), {
       pieces: PIECES,
       sound,
@@ -191,6 +229,13 @@ async function playPuzzle() {
       onPlaced: (piece, n) => {
         $('#progress').textContent = `${n} / ${PIECES.length}`;
         showFact(piece);
+        if (n === PIECES.length) {
+          // Completion time is taken when the 9th piece goes in (Req 1.5) and shown in the dialog.
+          finishedAt = performance.now();
+          clearInterval(timer);
+          $('#timer').textContent = fmt(finishedAt - startedAt);
+          lastCompletion = mode === 'main' ? progressStore.complete(finishedAt - startedAt) : null;
+        }
       },
       onRejected: (piece, missing) => {
         if (missing) {
@@ -202,23 +247,39 @@ async function playPuzzle() {
           toast(t(UI.wrong), true, 1600);
         }
       },
-      onWin: (attempts) => win(attempts),
+      onWin: (attempts) => (mode === 'bonus' ? bonus.win(attempts) : win(attempts)),
     });
     window.__jinciPuzzle = puzzle; // handy for debugging and automated play-tests
   }
-  puzzle.assemble();
+  return puzzle;
+}
+
+function prepareHud({ bonus: isBonus }) {
+  mode = isBonus ? 'bonus' : 'main';
+  $('#hud-goal').dataset.i18n = isBonus ? 'bonusGoal' : 'goal';
+  $('#hud-goal').textContent = t(isBonus ? UI.bonusGoal : UI.goal);
   $('#progress').textContent = `0 / ${PIECES.length}`;
   $('#timer').textContent = '00:00';
+  clearInterval(timer);
+}
+
+// One round: assembled hall → ghost-wind scatter → timer runs. Shared by both modes.
+async function startRound({ bonus: isBonus }) {
+  await show('game');
+  const p = ensurePuzzle();
+  p.assemble();
+  prepareHud({ bonus: isBonus });
   embers.setDensity(18);
   await sleep(1400);
   toast(t(UI.scatter), false, 2600);
   sound.wind();
-  await puzzle.scatter();
-  toast(t(UI.goal), false, 3200);
+  await p.scatter();
+  toast(t(isBonus ? UI.bonusGoal : UI.goal), false, 3200);
   startedAt = performance.now();
-  clearInterval(timer);
   timer = setInterval(() => { $('#timer').textContent = fmt(performance.now() - startedAt); }, 500);
 }
+
+const playPuzzle = () => startRound({ bonus: false });
 
 $('#btn-hint').addEventListener('click', () => {
   const p = puzzle?.hint();
@@ -226,18 +287,66 @@ $('#btn-hint').addEventListener('click', () => {
 });
 
 function win(attempts) {
-  clearInterval(timer);
-  $('#win-time').textContent = fmt(performance.now() - startedAt);
+  $('#win-time').textContent = fmt(finishedAt - startedAt);
   $('#win-moves').textContent = attempts;
   sound.fanfare();
   embers.celebrate();
-  setTimeout(() => { $('#win').hidden = false; $('#btn-again').focus(); }, 1600);
+  // Hidden level: only shown once unlocked, never hinted otherwise (Req 1.1, 1.2, 1.4).
+  const reveal = $('#unlock-reveal');
+  const unlocked = progressStore.isUnlocked();
+  reveal.hidden = !unlocked;
+  reveal.classList.toggle('just', !!lastCompletion?.justUnlocked);
+  updateBonusEntrance();
+  setTimeout(() => {
+    $('#win').hidden = false;
+    $('#btn-again').focus();
+    if (lastCompletion?.justUnlocked) {
+      sound.bell(165, 0.3);
+      const r = reveal.getBoundingClientRect();
+      embers.burst(r.left + r.width / 2, r.top + r.height / 2, 60, [150, 160, 170]);
+    }
+  }, 1600);
 }
 
 $('#btn-again').addEventListener('click', async () => {
   $('#win').hidden = true;
   await run();
 });
+
+// ---------- hidden level ----------
+function updateBonusEntrance() {
+  $('#btn-bonus').hidden = !progressStore.isUnlocked();
+}
+
+async function goTitle() {
+  clearInterval(timer);
+  mode = 'main';
+  $('#win').hidden = true;
+  embers.setDensity(0);
+  updateBonusEntrance();
+  await show('title');
+}
+
+const bonus = new BonusLevel({
+  t: (entry) => t(entry),
+  UI,
+  sound,
+  embers,
+  toast,
+  show,
+  ensurePuzzle,
+  prepareHud,
+  startRound,
+  goTitle,
+  fmt,
+  elapsedMs: () => finishedAt - startedAt,
+});
+
+document.querySelectorAll('.js-enter-bonus').forEach((b) => b.addEventListener('click', () => {
+  sound.init();
+  bonus.enter();
+}));
+updateBonusEntrance();
 
 // ---------- credits ----------
 function renderCredits() {
@@ -276,5 +385,6 @@ $('#btn-start').addEventListener('click', () => {
   run();
 });
 
+setupGallery();
 renderTexts();
 $('#scene-title').classList.add('visible');

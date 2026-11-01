@@ -2,8 +2,11 @@
 // outline, and only after the parts that structurally carry it are in place.
 
 import { buildPart, buildLanterns, el, PAINT_ORDER, STAGE } from './hall.js';
+import { scatterLayout } from './scatter.js';
 
 const SNAP_DISTANCE = 90; // stage units
+const CELL_MARGIN = 10; // gap between a loose piece and its cell border
+const MAX_JITTER = 24; // largest random offset inside a cell
 const VIEW_TOP = 80; // nothing is drawn above the chiwen tips (~y 96)
 // Landscape: 3×3 tray under the hall. Portrait phones: 2 columns of taller cells
 // so the pieces are big enough to grab with a finger.
@@ -32,6 +35,11 @@ export class Puzzle {
     this.state = new Map();
     this.attempts = 0;
     this.enabled = false;
+    this.rng = Math.random; // replaceable in tests (Req 9.6)
+    this.lastLayout = null;
+    this.inputMode = 'pointer';
+    this.drag = null;
+    this.animTokens = new Map();
     this.build();
   }
 
@@ -69,13 +77,26 @@ export class Puzzle {
       const part = buildPart(piece.id);
       wrap.appendChild(part);
       this.placedLayers[piece.id].appendChild(wrap);
-      const box = part.getBBox();
-      wrap.insertBefore(el('rect', {
-        x: box.x - 30, y: box.y - 30, width: box.width + 60, height: box.height + 60, class: 'hit',
-      }), part);
+      wrap.insertBefore(el('rect', { class: 'hit' }), part);
       this.nodes[piece.id] = wrap;
-      this.state.set(piece.id, { cx: box.x + box.width / 2, cy: box.y + box.height / 2, w: box.width, h: box.height, dx: 0, dy: 0, s: 1, rot: 0 });
+      this.state.set(piece.id, { cx: 0, cy: 0, w: 0, h: 0, dx: 0, dy: 0, s: 1, rot: 0 });
       this.bindPiece(piece, wrap);
+    }
+    this.measure();
+  }
+
+  // Bounding boxes can only be measured while the SVG is rendered. If the puzzle was
+  // built inside a hidden scene every box is 0×0, so measure again before it is used.
+  measure() {
+    for (const piece of this.pieces) {
+      const st = this.state.get(piece.id);
+      if (st.w > 0) continue;
+      const wrap = this.nodes[piece.id];
+      const box = wrap.querySelector(`.part-${piece.id}`).getBBox();
+      if (!box.width) continue; // still hidden; try again later
+      Object.assign(st, { cx: box.x + box.width / 2, cy: box.y + box.height / 2, w: box.width, h: box.height });
+      const hit = wrap.querySelector('.hit');
+      for (const [k, v] of Object.entries({ x: box.x - 30, y: box.y - 30, width: box.width + 60, height: box.height + 60 })) hit.setAttribute(k, v);
     }
   }
 
@@ -89,8 +110,13 @@ export class Puzzle {
     const st = this.state.get(id);
     const from = { dx: st.dx, dy: st.dy, s: st.s, rot: st.rot };
     const t0 = performance.now();
+    // A newer animation of the same piece cancels this one, so a return-to-tray
+    // tween cannot fight a drag that started while it was running.
+    const token = {};
+    this.animTokens.set(id, token);
     return new Promise((resolve) => {
       const step = (now) => {
+        if (this.animTokens.get(id) !== token) { resolve(); return; }
         const k = ease(Math.min(1, (now - t0) / ms));
         for (const key of Object.keys(to)) st[key] = from[key] + (to[key] - from[key]) * k;
         this.apply(id);
@@ -127,87 +153,164 @@ export class Puzzle {
     }
   }
 
-  trayTarget(id) {
-    const st = this.state.get(id);
-    const slot = st.traySlot;
+  // Inner box of tray cell `slot`, in stage units (the drawn cell minus a margin).
+  cellBox(slot) {
     const { tray } = this;
     const cellW = tray.w / tray.cols;
-    const cx = (slot % tray.cols) * cellW + cellW / 2;
-    const cy = tray.top + Math.floor(slot / tray.cols) * tray.rowH + tray.rowH / 2;
-    const s = Math.min((cellW - 90) / st.w, (tray.rowH - 50) / st.h, 0.9);
+    const x = (slot % tray.cols) * cellW + 20 + CELL_MARGIN;
+    const y = tray.top + Math.floor(slot / tray.cols) * tray.rowH + 8 + CELL_MARGIN;
+    return { x, y, w: cellW - 40 - 2 * CELL_MARGIN, h: tray.rowH - 16 - 2 * CELL_MARGIN };
+  }
+
+  trayTarget(id) {
+    const st = this.state.get(id);
+    const box = this.cellBox(st.traySlot);
+    // Size of the piece's bounding box once tilted by st.rot, at scale 1.
+    const a = Math.abs(st.rot) * Math.PI / 180;
+    const rw = st.w * Math.cos(a) + st.h * Math.sin(a);
+    const rh = st.w * Math.sin(a) + st.h * Math.cos(a);
+    const s = Math.min(box.w / rw, box.h / rh, 0.9);
+    // Random offset inside the room left over in the cell (Req 9.3).
+    const jitter = st.jitter ?? { x: 0, y: 0 };
+    const roomX = Math.min((box.w - rw * s) / 2, MAX_JITTER);
+    const roomY = Math.min((box.h - rh * s) / 2, MAX_JITTER);
+    const cx = box.x + box.w / 2 + jitter.x * roomX;
+    const cy = box.y + box.h / 2 + jitter.y * roomY;
     return { dx: cx - st.cx, dy: cy - st.cy, s, rot: st.rot };
   }
 
   // Blow the assembled hall apart into the tray (the "ghost wind").
   async scatter() {
+    this.measure();
     this.placed.clear();
     this.attempts = 0;
     this.lanterns.classList.remove('lit', 'hung');
-    const order = this.pieces.map((p) => p.id).sort(() => Math.random() - 0.5);
-    order.forEach((id, i) => {
+    const layout = scatterLayout(this.pieces.map((p) => p.id), this.lastLayout?.order, this.rng);
+    this.lastLayout = layout;
+    for (const [id, p] of Object.entries(layout.pieces)) {
       const st = this.state.get(id);
-      st.traySlot = i;
-      st.rot = (Math.random() - 0.5) * 16;
+      st.traySlot = p.slot;
+      st.rot = p.tilt;
+      st.jitter = p.jitter;
       this.looseLayer.appendChild(this.nodes[id]);
       this.nodes[id].classList.remove('placed');
-    });
+    }
     // a little upward lift first, as if the wind picks the timbers up
-    await Promise.all(order.map((id, i) => new Promise((r) => setTimeout(r, i * 70))
-      .then(() => this.animate(id, { dy: -40 - Math.random() * 60, s: 1.04, rot: this.state.get(id).rot, dx: (Math.random() - 0.5) * 80 }, 450))));
-    await Promise.all(order.map((id, i) => new Promise((r) => setTimeout(r, i * 90))
+    const later = (i, ms) => new Promise((r) => setTimeout(r, i * ms));
+    await Promise.all(layout.launch.map((id, i) => later(i, 70).then(() => {
+      const { lift, tilt } = layout.pieces[id];
+      return this.animate(id, { dx: lift.dx, dy: lift.dy, s: 1.04, rot: tilt }, 450);
+    })));
+    await Promise.all(layout.launch.map((id, i) => later(i, 90)
       .then(() => this.animate(id, this.trayTarget(id), 900))));
     this.enabled = true;
   }
 
-  toStage(evt) {
+  toStageXY(clientX, clientY) {
     const pt = this.svg.createSVGPoint();
-    pt.x = evt.clientX;
-    pt.y = evt.clientY;
+    pt.x = clientX;
+    pt.y = clientY;
     return pt.matrixTransform(this.svg.getScreenCTM().inverse());
   }
 
+  // ---------- drag API, shared by pointer and gesture input ----------
+
+  // 'pointer' (mouse, touch, keyboard) or 'gesture' (hidden level: only GestureInput may drag).
+  setInputMode(mode) {
+    if (this.drag) this.cancelDrag();
+    this.inputMode = mode;
+    this.svg.classList.toggle('gesture-mode', mode === 'gesture');
+  }
+
+  // Unplaced loose piece under a screen point, or null.
+  pieceAt(clientX, clientY) {
+    if (!this.enabled) return null;
+    const hit = document.elementFromPoint(clientX, clientY);
+    const node = hit?.closest?.('.piece');
+    if (!node || node.parentNode !== this.looseLayer) return null;
+    const { id } = node.dataset;
+    return this.placed.has(id) ? null : id;
+  }
+
+  isDragging() {
+    return !!this.drag;
+  }
+
+  beginDrag(id, clientX, clientY) {
+    if (!this.enabled || this.drag || this.placed.has(id)) return false;
+    const p = this.toStageXY(clientX, clientY);
+    const st = this.state.get(id);
+    this.drag = { id, ox: st.cx + st.dx - p.x, oy: st.cy + st.dy - p.y };
+    const node = this.nodes[id];
+    this.looseLayer.appendChild(node); // bring to front
+    node.classList.add('dragging');
+    this.ghosts[id].classList.add('wanted');
+    this.animate(id, { s: 1, rot: 0 }, 220); // also stops any return-to-tray animation
+    this.sound.knock();
+    return true;
+  }
+
+  dragTo(clientX, clientY) {
+    if (!this.drag) return;
+    const { id } = this.drag;
+    const p = this.toStageXY(clientX, clientY);
+    const st = this.state.get(id);
+    // shrink the grab offset over time so the piece centres under the finger / cursor
+    this.drag.ox *= 0.9;
+    this.drag.oy *= 0.9;
+    st.dx = p.x + this.drag.ox - st.cx;
+    st.dy = p.y + this.drag.oy - st.cy;
+    this.apply(id);
+  }
+
+  finishDrag() {
+    const { id } = this.drag;
+    this.drag = null;
+    this.nodes[id].classList.remove('dragging');
+    this.ghosts[id].classList.remove('wanted');
+    return id;
+  }
+
+  // Drop the held piece under the normal rules (snap, supports, messages, attempts).
+  endDrag() {
+    if (!this.drag) return;
+    const id = this.finishDrag();
+    this.drop(this.pieces.find((p) => p.id === id));
+  }
+
+  // Put the held piece back in its tray cell without counting an attempt (hand lost, mode change).
+  cancelDrag() {
+    if (!this.drag) return;
+    const id = this.finishDrag();
+    this.animate(id, this.trayTarget(id), 500);
+  }
+
   bindPiece(piece, node) {
-    let drag = null;
+    let pointerId = null;
     // Move/up are tracked on window: re-parenting the node to bring it to the
     // front would otherwise drop pointer capture in some browsers.
     const move = (e) => {
-      if (!drag || e.pointerId !== drag.pointerId) return;
-      const p = this.toStage(e);
-      const st = this.state.get(piece.id);
-      // shrink the offset as the piece grows so it stays under the finger
-      drag.ox *= 0.9;
-      drag.oy *= 0.9;
-      st.dx = p.x + drag.ox - st.cx;
-      st.dy = p.y + drag.oy - st.cy;
-      this.apply(piece.id);
+      if (e.pointerId === pointerId) this.dragTo(e.clientX, e.clientY);
     };
     const end = (e) => {
-      if (!drag || e.pointerId !== drag.pointerId) return;
-      drag = null;
+      if (e.pointerId !== pointerId) return;
+      pointerId = null;
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', end);
       window.removeEventListener('pointercancel', end);
-      node.classList.remove('dragging');
-      this.ghosts[piece.id].classList.remove('wanted');
-      this.drop(piece);
+      if (this.drag?.id === piece.id) this.endDrag();
     };
     node.addEventListener('pointerdown', (e) => {
-      if (!this.enabled || drag || this.placed.has(piece.id)) return;
+      if (this.inputMode !== 'pointer' || pointerId !== null) return;
+      if (!this.beginDrag(piece.id, e.clientX, e.clientY)) return;
       e.preventDefault();
-      const p = this.toStage(e);
-      const st = this.state.get(piece.id);
-      drag = { pointerId: e.pointerId, ox: st.cx + st.dx - p.x, oy: st.cy + st.dy - p.y };
-      this.looseLayer.appendChild(node); // bring to front
+      pointerId = e.pointerId;
       window.addEventListener('pointermove', move);
       window.addEventListener('pointerup', end);
       window.addEventListener('pointercancel', end);
-      node.classList.add('dragging');
-      this.ghosts[piece.id].classList.add('wanted');
-      this.animate(piece.id, { s: 1, rot: 0 }, 220); // position stays under pointer control
-      this.sound.knock();
     });
     node.addEventListener('keydown', (e) => {
-      if (!this.enabled || this.placed.has(piece.id)) return;
+      if (this.inputMode !== 'pointer' || !this.enabled || this.placed.has(piece.id)) return;
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         this.tryPlace(piece);
@@ -288,6 +391,7 @@ export class Puzzle {
 
   // Reset to the fully assembled hall (used for the intro reveal and replays).
   assemble() {
+    this.measure();
     this.enabled = false;
     this.lanterns.classList.add('hung');
     for (const piece of this.pieces) {

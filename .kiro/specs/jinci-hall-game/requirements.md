@@ -46,7 +46,7 @@ A browser game for Kiroween 2026 about the Hall of the Holy Mother (圣母殿) a
 
 1. WHEN time travel ends THEN the game SHALL fade in a credited photo of the hall's front, slowly zooming in, with the line "千年之后，它依然在这里。".
 2. AFTER the photo has been shown THEN the game SHALL darken it into night and play a wind sound.
-3. WHEN the puzzle scene opens THEN the game SHALL first show the fully assembled hall, then blow every piece into a random tray cell with a lift-then-fly animation.
+3. WHEN the puzzle scene opens THEN the game SHALL first show the fully assembled hall, then blow every piece into a random tray cell with a lift-then-fly animation. The random layout SHALL follow Requirement 9 of the `gesture-bonus-level` spec (uniform shuffle, different from the previous scatter, random tilt and offset).
 4. The game SHALL NOT accept input on pieces until the scatter animation has finished.
 
 ### Requirement 4: Rebuilding the hall
