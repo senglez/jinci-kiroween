@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check game content on save",
+      "trigger": "PostFileSave",
+      "description": "After saving a game JS file or index.html, check syntax, zh/en text, build-order graph, and image credits.",
+      "matcher": "(js/.*\\.js|index\\.html)$",
+      "action": {
+        "type": "command",
+        "command": "node tools/check.mjs",
+        "timeout": 30
+      }
+    }
+  ]
+}

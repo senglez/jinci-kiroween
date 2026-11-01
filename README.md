@@ -23,6 +23,21 @@ node tools/serve.mjs 8080   # then open http://localhost:8080
 
 Any static host works (GitHub Pages, Netlify, S3, etc.).
 
+Check content and code before committing:
+
+```bash
+node tools/check.mjs
+```
+
+It verifies that every JS file parses, all text has Chinese and English, the milestone years run backwards, the puzzle build order has no cycles, and every image shown in the game is credited.
+
+## How Kiro is used
+
+- **Spec**: `.kiro/specs/jinci-hall-game/` holds the requirements (EARS acceptance criteria), the design (architecture, support graph, correctness properties), and the task list.
+- **Hook**: `.kiro/hooks/check-on-save.json` runs `node tools/check.mjs` whenever a `js/*.js` file or `index.html` is saved.
+- **Steering**: `.kiro/steering/project.md` sets the content, licensing, and code rules.
+- **Powers**: Playwright was used to play-test the full game headlessly on desktop and phone sizes.
+
 ## Project layout
 
 ```
@@ -38,6 +53,9 @@ js/audio.js         Web Audio bells, wind, drone (no music files)
 js/credits.js       image attribution shown in-game
 assets/photos/      the 13 images used in the game
 research/           sources, full image catalogue, download tools
+tools/serve.mjs     local static server
+tools/check.mjs     content and code checks (run by the Kiro hook)
+.kiro/              spec, hook, steering
 ```
 
 ## Sources and licences

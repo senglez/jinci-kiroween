@@ -19,3 +19,5 @@ inclusion: always
 - Sound is synthesized with Web Audio. Do not add music files.
 - Keep pointer, touch, and keyboard input working, and honour `prefers-reduced-motion`.
 - Play-test with Playwright: `window.__jinciPuzzle` exposes the puzzle for automated runs.
+- `node tools/check.mjs` must pass before committing. The `check-on-save` hook runs it automatically.
+- The feature spec lives in `.kiro/specs/jinci-hall-game/`. Update its requirements and tasks when behaviour changes.
