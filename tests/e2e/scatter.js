@@ -28,7 +28,7 @@ async (page) => {
   });
 
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto('https://jinci.test/index.html');
+  await page.goto('https://jinci.test/index.html?lang=zh');
   await page.evaluate(() => localStorage.clear());
   await page.click('#btn-start');
   await page.waitForTimeout(800);

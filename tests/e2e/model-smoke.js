@@ -22,7 +22,7 @@ async (page) => {
   page.on('request', onReq);
 
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto('https://jinci.test/index.html');
+  await page.goto('https://jinci.test/index.html?lang=zh');
   await page.waitForTimeout(800);
   const beforeOpen = vendorHits.length; // Req 8.2: nothing loaded until the hidden level asks for it
 

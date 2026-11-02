@@ -28,8 +28,9 @@ const storage = (() => {
 })();
 const progressStore = createProgressStore(storage);
 
-// Chinese first; ?lang=en or the toggle switches to English.
-let lang = new URLSearchParams(location.search).get('lang') || storage?.getItem('jinci-lang') || 'zh';
+// English first (most judges and players read English); ?lang=zh or the toggle switches to Chinese.
+const urlLang = new URLSearchParams(location.search).get('lang');
+let lang = ['zh', 'en'].includes(urlLang) ? urlLang : storage?.getItem('jinci-lang') === 'zh' ? 'zh' : 'en';
 const t = (entry) => entry[lang] ?? entry.zh;
 
 const sound = new Sound();
@@ -41,6 +42,7 @@ spawnBats($('#bats'));
 let currentMilestone = null;
 function renderTexts() {
   document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.title = t(UI.pageTitle);
   document.querySelectorAll('[data-i18n]').forEach((node) => {
     node.textContent = t(UI[node.dataset.i18n]);
   });

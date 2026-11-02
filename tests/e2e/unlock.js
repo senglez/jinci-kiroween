@@ -41,7 +41,7 @@ async (page) => {
     return ui();
   };
   const freshBrowser = async () => {
-    await page.goto('https://jinci.test/index.html');
+    await page.goto('https://jinci.test/index.html?lang=zh');
     await page.evaluate(() => localStorage.clear());
     await page.reload();
     await page.waitForTimeout(500);

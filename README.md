@@ -28,7 +28,7 @@ Press your palms together 🙏 in front of the camera and hold still. After a se
 
 Privacy: the camera starts only after you press "开启摄像头". Video is processed in the browser by Google's MediaPipe hand tracker, vendored in `vendor/mediapipe/` (about 22 MB, loaded only when you open the level). Nothing is recorded, stored, or uploaded. A live preview with a red badge is shown whenever the camera is on, and the camera turns off when you leave, win, or switch away from the page.
 
-The game is in Chinese and English (toggle at top right, or `?lang=en`). It works with mouse, touch, and keyboard (Tab to a part, Enter to place it), and respects `prefers-reduced-motion`.
+The game is in English and Chinese (English by default; toggle at top right, or `?lang=zh`). It works with mouse, touch, and keyboard (Tab to a part, Enter to place it), and respects `prefers-reduced-motion`.
 
 ## Run locally
 

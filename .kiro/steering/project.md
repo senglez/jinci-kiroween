@@ -10,7 +10,7 @@ inclusion: always
 
 ## Content rules
 - Every historical claim in `js/data.js` must have a source in `research/SOURCES.md`. Where sources disagree, use the mainstream date and note the alternative in SOURCES.md.
-- All text is bilingual: every entry has both `zh` and `en`. Chinese is the default language.
+- All text is bilingual: every entry has both `zh` and `en`. English is the default language; Chinese via the toggle or `?lang=zh`.
 - Only use images that are public domain or CC-licensed. Add each new image to `assets/photos/credits.json` and regenerate `js/credits.js`.
 
 ## Code rules

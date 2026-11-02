@@ -182,6 +182,7 @@ export const PIECES = [
 ];
 
 export const UI = {
+  pageTitle: { zh: '夜穿千年 · 晋祠圣母殿 | Kiroween 2026', en: 'A Night Across Ten Centuries · Jinci | Kiroween 2026' },
   title: { zh: '夜穿千年 · 晋祠圣母殿', en: 'A Night Across Ten Centuries' },
   subtitle: { zh: 'Kiroween 2026 · 山西太原', en: 'The Hall of the Holy Mother, Jinci · Kiroween 2026' },
   start: { zh: '点亮灯笼，开始穿越', en: 'Light the lantern & travel back' },
