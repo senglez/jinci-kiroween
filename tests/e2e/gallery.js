@@ -25,7 +25,7 @@ async (page) => {
   const log = {};
 
   await pg.setViewportSize({ width: 1280, height: 800 });
-  await pg.goto('https://jinci.test/index.html');
+  await pg.goto('https://jinci.test/index.html?lang=zh');
   await pg.waitForTimeout(800);
   assert(galleryHits.length === 0, 'no gallery image before opening (Req 4.4)');
   assert(await pg.isVisible('#btn-gallery'), 'gallery button visible on the title screen (Req 1.1)');

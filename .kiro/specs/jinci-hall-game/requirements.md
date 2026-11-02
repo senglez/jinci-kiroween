@@ -80,8 +80,8 @@ A browser game for Kiroween 2026 about the Hall of the Holy Mother (圣母殿) a
 
 #### Acceptance Criteria
 
-1. The game SHALL default to Chinese.
-2. WHEN the URL has `?lang=en` OR the player presses the language button THEN the game SHALL show all text in English, including a card already on screen.
+1. The game SHALL default to English, unless the player chose Chinese before (remembered in `localStorage`). *(Changed after submission: most judges and players read English.)*
+2. WHEN the URL has `?lang=zh` or `?lang=en`, OR the player presses the language button THEN the game SHALL show all text in that language, including a card already on screen; the page title SHALL follow the language.
 3. Every milestone, piece, and UI string SHALL have non-empty Chinese and English text.
 
 ### Requirement 7: Input, devices, and accessibility

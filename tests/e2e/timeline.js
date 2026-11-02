@@ -32,7 +32,7 @@ async (page) => {
   const log = {};
 
   await pg.setViewportSize({ width: 1280, height: 800 });
-  await pg.goto('https://jinci.test/index.html');
+  await pg.goto('https://jinci.test/index.html?lang=zh');
   await pg.evaluate(() => localStorage.clear());
   await pg.reload();
   await pg.waitForTimeout(500);

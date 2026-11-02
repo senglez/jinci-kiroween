@@ -18,7 +18,7 @@ async (page) => {
   const log = {};
 
   await pg.setViewportSize({ width: 1280, height: 800 });
-  await pg.goto('https://jinci.test/index.html');
+  await pg.goto('https://jinci.test/index.html?lang=zh');
   await pg.evaluate(() => localStorage.setItem('jinci-bonus-v1', JSON.stringify({ firstCompletionMs: 60000, unlocked: true })));
   await pg.reload();
   await pg.waitForTimeout(600);
