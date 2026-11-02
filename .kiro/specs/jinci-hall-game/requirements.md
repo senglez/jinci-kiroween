@@ -20,7 +20,7 @@ A browser game for Kiroween 2026 about the Hall of the Holy Mother (圣母殿) a
 
 #### Acceptance Criteria
 
-1. WHEN the page loads THEN the game SHALL show the title, subtitle, and a start button over an animated night sky with moon, stars, fog, and bats. The moon SHALL be a real, freely licensed photograph of the full moon in which the maria, including Mare Tranquillitatis (静海), are visible, and it SHALL be credited.
+1. WHEN the page loads THEN the game SHALL show the title, subtitle, and a start button over an animated night sky with moon, stars, fog, and bats. The moon SHALL be drawn in the game's flat illustration style, with soft maria placed after the real near side, including Mare Tranquillitatis (静海). *(A real photo was tried and dropped after review: it looked out of place in the illustrated scene.)*
 2. WHEN the player presses the start button THEN the game SHALL start audio from that user gesture and begin the time travel.
 3. The game SHALL NOT play any sound before the player's first gesture.
 
