@@ -163,7 +163,7 @@ async function travel() {
     currentMilestone = m;
     fillCard(m);
     card.classList.add('show');
-    await skippable(m.photo ? 5200 : 4300);
+    await skippable(5200); // every milestone has a photo
     card.classList.remove('show');
     await sleep(350);
   }

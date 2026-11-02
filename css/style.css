@@ -144,7 +144,7 @@ h1 {
 .card h2 { font-family: var(--font-title); font-weight: 400; color: var(--lantern-2); margin: 0 0 6px; font-size: clamp(22px, 3.4vw, 32px); }
 .card p { margin: 0; line-height: 1.7; font-size: clamp(15px, 2vw, 18px); }
 .card figure { margin: 12px 0 0; display: flex; gap: 12px; align-items: center; }
-.card img { height: clamp(90px, 18vh, 170px); max-width: 55%; object-fit: cover; border-radius: 8px; filter: sepia(.55) contrast(1.05); box-shadow: 0 0 18px rgba(255, 195, 92, .35); }
+.card img { height: clamp(90px, 18vh, 170px); aspect-ratio: 4 / 3; max-width: 55%; object-fit: cover; /* same frame for every milestone */ border-radius: 8px; filter: sepia(.55) contrast(1.05); box-shadow: 0 0 18px rgba(255, 195, 92, .35); }
 .card figcaption { font-size: 12px; opacity: .7; }
 #btn-skip { position: absolute; right: 16px; bottom: 16px; }
 
