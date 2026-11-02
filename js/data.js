@@ -9,6 +9,8 @@ export const MILESTONES = [
       zh: '你站在鱼沼飞梁上。夜风穿过周柏，圣母殿檐下的灯笼忽然自己亮了……',
       en: 'You stand on the Flying Bridge. Wind stirs the Zhou cypress, and the lanterns under the eaves light up by themselves...',
     },
+    photo: 'assets/photos/hall-sunset.jpg',
+    photoCaption: { zh: '夕阳下，从鱼沼飞梁望圣母殿 · Patrick20242023 摄 CC BY-SA 4.0', en: 'The hall at dusk, seen from the Flying Bridge · photo Patrick20242023, CC BY-SA 4.0' },
   },
   {
     year: 1993,
@@ -17,6 +19,8 @@ export const MILESTONES = [
       zh: '圣母殿落架大修：整座木构被逐件拆下、修补，再按原样装回。',
       en: 'The hall is taken apart piece by piece, repaired, and reassembled exactly as before.',
     },
+    photo: 'assets/photos/dougong.jpg',
+    photoCaption: { zh: '大修时逐件拆下又装回的斗拱（今貌）· Patrick20242023 摄 CC BY-SA 4.0', en: 'Brackets like these were taken apart and refitted (today) · photo Patrick20242023, CC BY-SA 4.0' },
   },
   {
     year: 1961,
@@ -25,6 +29,8 @@ export const MILESTONES = [
       zh: '晋祠被国务院公布为第一批全国重点文物保护单位。',
       en: 'Jinci is listed in the first batch of China’s Major Historical and Cultural Sites.',
     },
+    photo: 'assets/photos/hall-front-2025.jpg',
+    photoCaption: { zh: '受保护至今的圣母殿（2025）· Yumeto 摄 CC BY-SA 4.0', en: 'The protected hall today (2025) · photo Yumeto, CC BY-SA 4.0' },
   },
   {
     year: 1934,
@@ -33,6 +39,8 @@ export const MILESTONES = [
       zh: '梁思成、林徽因考察晋汾古建筑，在《晋汾古建筑预查纪略》中称飞梁前的宋代铁狮“灵动如生”。',
       en: 'Liang Sicheng and Lin Huiyin survey Shanxi’s old buildings and praise the Song iron lions as “alive and moving”.',
     },
+    photo: 'assets/photos/guide1932-nanlao-pavilion.jpg',
+    photoCaption: { zh: '考察前两年的难老泉亭：《晋祠指南》图版（1932，公有领域）', en: 'Nanlao Spring Pavilion two years before the survey: 1932 guidebook plate (public domain)' },
   },
   {
     year: 1932,
@@ -41,8 +49,8 @@ export const MILESTONES = [
       zh: '张庆亨编《晋祠指南》出版，书中印有晋祠最早的一批风景照片。',
       en: 'Zhang Qingheng’s “Guide to Jinci” is printed, with some of the earliest published photos of the site.',
     },
-    photo: 'assets/photos/guide1932-plate-1-2.jpg',
-    photoCaption: { zh: '《晋祠指南》图版（1932，公有领域）', en: '1932 Guide to Jinci, plate (public domain)' },
+    photo: 'assets/photos/guide1932-chaoyang.jpg',
+    photoCaption: { zh: '《晋祠指南》图版：朝阳洞（1932，公有领域）', en: '1932 Guide to Jinci plate: Chaoyang Cave (public domain)' },
   },
   {
     year: 1875,
@@ -61,6 +69,8 @@ export const MILESTONES = [
       zh: '鱼沼飞梁以东建起献殿，专为向圣母献祭品。',
       en: 'The Offering Hall is built east of the Flying Bridge, for presenting gifts to the Holy Mother.',
     },
+    photo: 'assets/gallery/summer-4.jpg',
+    photoCaption: { zh: '金代献殿 · xin 摄 CC BY-SA 4.0', en: 'The Jin-dynasty Offering Hall · photo xin, CC BY-SA 4.0' },
   },
   {
     year: 1118,
@@ -89,6 +99,8 @@ export const MILESTONES = [
       zh: '宋仁宗追封唐叔虞为汾东王，并为其母邑姜修建圣母殿。工地上，木料已经备齐，只差一位营造匠人——就是你。',
       en: 'Emperor Renzong honours Tang Shuyu and builds this hall for his mother, Yi Jiang. The timber is ready. The site needs one more builder: you.',
     },
+    photo: 'assets/photos/dragon-column.jpg',
+    photoCaption: { zh: '北宋木雕盘龙柱，至今仍在前廊 · 林高志 摄 CC BY-SA 4.0', en: 'A Northern Song carved dragon column, still on the porch · photo 林高志, CC BY-SA 4.0' },
   },
 ];
 

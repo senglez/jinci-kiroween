@@ -48,6 +48,12 @@ if (!errors.length) {
   PIECES.forEach((p) => checkBilingual(`PIECES.${p.id}`, p));
   checkBilingual('UI', UI);
 
+  // every milestone shows a photo with a bilingual caption (main spec Req 2.4)
+  MILESTONES.forEach((m) => {
+    if (!m.photo) fail(`MILESTONES (${m.year}): missing photo`);
+    if (!m.photoCaption?.zh?.trim() || !m.photoCaption?.en?.trim()) fail(`MILESTONES (${m.year}): photo caption needs zh and en`);
+  });
+
   // milestones must run strictly backwards in time
   MILESTONES.forEach((m, i) => {
     if (i && m.year >= MILESTONES[i - 1].year) fail(`MILESTONES: ${m.year} is not earlier than ${MILESTONES[i - 1].year}`);

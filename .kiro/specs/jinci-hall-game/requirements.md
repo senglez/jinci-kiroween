@@ -33,7 +33,7 @@ A browser game for Kiroween 2026 about the Hall of the Holy Mother (圣母殿) a
 1. WHEN time travel starts THEN the game SHALL show a full-screen first-person tunnel with stars and rings rushing toward the viewer.
 2. The game SHALL visit milestones in strictly descending year order from 2026 to 1023.
 3. WHEN moving between milestones THEN the year counter SHALL roll from the previous year to the next, and the tunnel SHALL speed up and shift from violet toward amber as the year gets older.
-4. WHEN a milestone is reached THEN the game SHALL show a card with its era and event text, and its photo and photo credit if it has one.
+4. WHEN a milestone is reached THEN the game SHALL show a card with its era, event text, a photo, and the photo's caption and credit. Every milestone SHALL have a freely licensed photo; where no photo of the event itself is free to use, the caption SHALL say what is shown instead (for example, today's view or a nearby year).
 5. WHEN the player clicks a card THEN the game SHALL move on to the next milestone.
 6. WHEN the player presses Skip THEN the game SHALL end the time travel and go straight to the arrival.
 7. WHEN the last milestone is done THEN the game SHALL accelerate, flash to white, and stop the tunnel.
