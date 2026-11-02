@@ -7,6 +7,7 @@ import { afterCompletion, createProgressStore, EMPTY_PROGRESS, parseProgress, ST
 import { GRAB_RATIO, HoldTimer, isPalmsTogether, mapToUnit, OneEuro, PinchMachine, pinchPoint, PRAYER, RELEASE_RATIO, selectHand, STEADY_FRAMES } from '../js/bonus/gesture.js';
 import { MAX_TILT, sameOrder, scatterLayout, shuffle } from '../js/scatter.js';
 import { firstOfSeason, seasonForMonth, wrap } from '../js/gallery.js';
+import { clampIndex, flightDirection, nextAuto } from '../js/timeline.js';
 
 // ---------- harness ----------
 
@@ -349,6 +350,27 @@ example('G2 every month maps to its season (Mar–May spring … Dec–Feb winte
   const items = [{ season: 'spring' }, { season: 'spring' }, { season: 'summer' }];
   assert(firstOfSeason(items, 'summer') === 2 && firstOfSeason(items, 'winter') === -1, 'firstOfSeason');
 });
+
+// ---------- timeline (main spec Requirement 9) ----------
+
+property('T1 timeline index is clamped, never wraps, and nextAuto stops at the end', 3000,
+  (rng) => ({ i: pick(rng, [int(rng, -50, 50), NaN, Infinity, -Infinity, int(rng, 0, 9) + 0.5]), n: int(rng, 1, 20) }),
+  ({ i, n }, rng) => {
+    const c = clampIndex(i, n);
+    if (!(Number.isInteger(c) && c >= 0 && c < n)) return false;
+    if (Number.isFinite(i) && i >= 0 && i < n && c !== Math.trunc(i)) return false;
+    if (i >= n && c !== n - 1) return false; // past the end: stays at the last milestone
+    const k = int(rng, 0, n - 1);
+    return nextAuto(n - 1, n) === null && (k === n - 1 || nextAuto(k, n) === k + 1);
+  });
+
+property('T2 flight direction: higher index = further into the past, and it is antisymmetric', 2000,
+  (rng) => ({ a: int(rng, 0, 9), b: int(rng, 0, 9) }),
+  ({ a, b }) => {
+    const d = flightDirection(a, b);
+    const same = (x, y) => x === y || (x === 0 && y === 0); // treat -0 and 0 as equal
+    return same(d, Math.sign(b - a)) && same(flightDirection(b, a), -d) && (a !== b || d === 0);
+  });
 
 // ---------- report ----------
 

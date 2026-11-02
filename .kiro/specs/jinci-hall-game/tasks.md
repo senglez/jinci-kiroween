@@ -65,3 +65,14 @@
     - _Requirements: 2.2, 4.8, 6.3, 8.3_
   - [x] 9.3 Playwright play-test at 1280×800 and 390×844, including an out-of-order drop and a mid-game resize
     - _Requirements: 4.2, 4.3, 5.2, 7.3_
+
+- [x] 10. Timeline navigation (player feedback)
+  - [x] 10.1 Pure helpers in `js/timeline.js` and properties T1–T2
+    - _Requirements: 9.2, 9.7_
+  - [x] 10.2 Travel controller with jumps, pause, 继续, cancellable flights; reverse warp
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+  - [x] 10.3 Timeline viewer, `时间线` button, bilingual strings, styles
+    - _Requirements: 9.6, 9.7, 9.8_
+  - [x] 10.4 e2e `tests/e2e/timeline.js`
+    - _Requirements: 9.1–9.7_
+

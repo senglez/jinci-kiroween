@@ -106,3 +106,19 @@ A browser game for Kiroween 2026 about the Hall of the Holy Mother (圣母殿) a
 2. The game SHALL only bundle images that are public domain or CC-licensed.
 3. Every image the game shows SHALL have an entry with author, licence, and source link in the in-game credits.
 4. All sound SHALL be synthesized in the browser; the project SHALL NOT include music files.
+
+### Requirement 9: Timeline navigation
+
+**User Story:** As a player, I want to jump back and forth between the eras, both during the time travel and afterwards, so that I can revisit a moment without starting over. *(Added after player feedback on the live game.)*
+
+#### Acceptance Criteria
+
+1. WHILE the time travel is running THE game SHALL show a timeline with one marker per milestone, in travel order (2026 first), each labelled with its year; the current milestone SHALL be highlighted and visited milestones marked.
+2. WHEN the player picks a marker THEN the game SHALL fly to that milestone: the year counter rolls to its year and the tunnel speeds up, flowing backwards when moving towards the present. The flight SHALL take about 1 second, regardless of distance.
+3. WHEN the player picks a marker or presses ← / → during the time travel THEN automatic advancing SHALL pause, and a "继续" button SHALL appear that resumes automatic advancing from the current milestone. Clicking the card SHALL still move on to the next milestone (Requirement 2.5) without changing whether advancing is automatic or paused.
+4. WHEN the player picks a marker or presses a key while a flight is still running THEN the game SHALL go to the newest target; earlier flights SHALL stop and not show their cards.
+5. WHEN the player continues from the last milestone, or automatic advancing finishes it THEN the game SHALL end the time travel as before. "跳过" SHALL still end it at any time.
+6. The game SHALL show a "时间线" button in the top controls on every screen except during the time travel and the hidden level. WHEN pressed THEN a timeline viewer SHALL open on the most recently shown milestone (or 2026) showing the same card content, with the same markers, previous / next buttons, ← / → keys, Escape and backdrop to close, and focus returned to the button on close.
+7. Paging in the viewer SHALL stop at the first and last milestone (no wrap-around), with the unavailable button disabled.
+8. All new text SHALL have Chinese and English versions, and every control SHALL have an accessible label.
+
