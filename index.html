@@ -25,6 +25,7 @@
   <nav class="controls">
     <button id="btn-lang" type="button" aria-label="Switch language">EN</button>
     <button id="btn-sound" type="button" aria-pressed="true"><span data-i18n="sound"></span> ♪</button>
+    <button id="btn-timeline" type="button" data-i18n="timeline"></button>
     <button id="btn-gallery" type="button" data-i18n="gallery"></button>
     <button id="btn-credits" type="button" data-i18n="credits"></button>
   </nav>
@@ -53,6 +54,12 @@
         <figcaption id="card-caption"></figcaption>
       </figure>
     </article>
+    <nav class="tl-bar" data-i18n-aria="timeline" aria-label="时间线">
+      <span class="tl-end" data-i18n="timelineNow"></span>
+      <div id="tl-markers" class="tl-markers"></div>
+      <span class="tl-end" data-i18n="timelinePast"></span>
+    </nav>
+    <button id="btn-continue" class="btn-primary tl-continue" type="button" data-i18n="timelineContinue" hidden></button>
     <button id="btn-skip" class="btn-ghost" type="button" data-i18n="skip"></button>
   </section>
 
@@ -200,6 +207,30 @@
       <p class="gallery-meta"><span id="gallery-season"></span> <span id="gallery-counter" class="gallery-counter"></span></p>
       <p id="gallery-caption" class="gallery-caption"></p>
       <p class="gallery-credit"><a id="gallery-credit" target="_blank" rel="noopener"></a> · Wikimedia Commons</p>
+    </div>
+  </div>
+
+  <!-- timeline viewer: revisit any era after the time travel (Req 9.6) -->
+  <div id="timeline-viewer" class="modal" role="dialog" aria-modal="true" aria-labelledby="tlv-title" hidden>
+    <div class="modal-box tlv-box">
+      <div class="gallery-head">
+        <h2 id="tlv-title" data-i18n="timeline"></h2>
+        <button id="btn-tlv-close" class="btn-ghost gallery-close" type="button" data-i18n-aria="close" aria-label="关闭">×</button>
+      </div>
+      <div class="tl-bar tl-bar-static">
+        <span class="tl-end" data-i18n="timelineNow"></span>
+        <div id="tlv-markers" class="tl-markers"></div>
+        <span class="tl-end" data-i18n="timelinePast"></span>
+      </div>
+      <article class="card tlv-card">
+        <h2 id="tlv-era"></h2>
+        <p id="tlv-text"></p>
+        <figure><img id="tlv-img" alt=""><figcaption id="tlv-caption"></figcaption></figure>
+      </article>
+      <div class="modal-actions">
+        <button id="btn-tlv-prev" class="btn-ghost" type="button" data-i18n="timelinePrev"></button>
+        <button id="btn-tlv-next" class="btn-ghost" type="button" data-i18n="timelineNext"></button>
+      </div>
     </div>
   </div>
 

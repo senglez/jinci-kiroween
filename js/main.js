@@ -10,6 +10,7 @@ import { createProgressStore } from './bonus/progress.js';
 import { BonusLevel } from './bonus/level.js';
 import { GalleryViewer } from './gallery.js';
 import { GALLERY, SEASONS } from './gallery-data.js';
+import { buildMarkers, clampIndex, flightDirection, markState, nextAuto, TimelineViewer } from './timeline.js';
 
 const $ = (sel) => document.querySelector(sel);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -43,10 +44,15 @@ function renderTexts() {
   document.querySelectorAll('[data-i18n]').forEach((node) => {
     node.textContent = t(UI[node.dataset.i18n]);
   });
+  document.querySelectorAll('[data-i18n-aria]').forEach((node) => {
+    node.setAttribute('aria-label', t(UI[node.dataset.i18nAria]));
+  });
   $('#btn-lang').textContent = lang === 'zh' ? 'EN' : '中文';
   if (currentMilestone) fillCard(currentMilestone);
   renderCredits();
   gallery?.renderTexts();
+  travelMarkers.forEach((b, i) => b.setAttribute('aria-label', markerLabel(MILESTONES[i])));
+  tlViewer?.renderTexts();
 }
 
 // ---------- 晋祠美景 gallery ----------
@@ -99,83 +105,182 @@ async function flash() {
   $('#flash').classList.remove('on');
 }
 
-// ---------- time travel ----------
-let skip = null;
-function skippable(ms) {
-  return Promise.race([sleep(ms), new Promise((r) => { skip = r; })]);
-}
+// ---------- time travel (Req 2, 9) ----------
+// A small controller: automatic advancing, plus jumps from the timeline, card clicks, and
+// arrow keys. Every flight carries a token; a newer jump cancels older flights and waits.
+const LAST = MILESTONES.length - 1;
+const tl = { index: 0, visited: new Set(), auto: true, token: 0, year: MILESTONES[0].year, active: false, done: null };
+let lastMilestoneIndex = 0; // most recently shown milestone, for the timeline viewer
 let skipAll = false;
-$('#btn-skip').addEventListener('click', () => { skipAll = true; skip?.(); });
-$('#card').addEventListener('click', () => skip?.());
+let cancelWait = null;
+
+function wait(ms) {
+  cancelWait?.();
+  return new Promise((resolve) => {
+    const h = setTimeout(() => { cancelWait = null; resolve(true); }, ms);
+    cancelWait = () => { clearTimeout(h); cancelWait = null; resolve(false); };
+  });
+}
+
+const markerLabel = (m) => t(m.era);
+const travelMarkers = buildMarkers($('#tl-markers'), MILESTONES, (i) => userJump(i), markerLabel);
 
 function fillCard(m) {
   $('#card-era').textContent = t(m.era);
   $('#card-text').textContent = t(m.text);
-  const fig = $('#card-figure');
-  if (m.photo) {
-    fig.hidden = false;
-    $('#card-img').src = m.photo;
-    $('#card-img').alt = t(m.photoCaption);
-    $('#card-caption').textContent = t(m.photoCaption);
-  } else {
-    fig.hidden = true;
-  }
+  $('#card-figure').hidden = false;
+  $('#card-img').src = m.photo;
+  $('#card-img').alt = t(m.photoCaption);
+  $('#card-caption').textContent = t(m.photoCaption);
 }
 
-function animateYear(from, to, ms) {
+function animateYear(from, to, ms, token) {
   const yearEl = $('#year');
-  const span = MILESTONES[0].year - MILESTONES[MILESTONES.length - 1].year;
+  const span = MILESTONES[0].year - MILESTONES[LAST].year;
   const t0 = performance.now();
   return new Promise((resolve) => {
     const step = (now) => {
+      if (token !== tl.token) { resolve(false); return; } // a newer jump took over (Req 9.4)
       const k = skipAll ? 1 : Math.min(1, (now - t0) / ms);
       const eased = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
       const y = Math.round(from + (to - from) * eased);
+      tl.year = y;
       yearEl.textContent = y;
       warp.age = (MILESTONES[0].year - y) / span;
-      if (k < 1) requestAnimationFrame(step); else resolve();
+      if (k < 1) requestAnimationFrame(step); else resolve(!skipAll);
     };
     requestAnimationFrame(step);
   });
 }
 
+function showCard(i) {
+  const m = MILESTONES[i];
+  tl.index = i;
+  tl.visited.add(i);
+  lastMilestoneIndex = i;
+  currentMilestone = m;
+  fillCard(m);
+  warp.targetSpeed = 0.35;
+  $('#year').classList.add('small');
+  $('#card').classList.add('show');
+  markState(travelMarkers, i, tl.visited);
+  sound.bell(i === LAST ? 147 : 220, 0.2);
+}
+
+// Fly to milestone i. Resolves true if it arrived and its card is showing.
+async function goTo(i, ms) {
+  const token = ++tl.token;
+  cancelWait?.();
+  const dir = flightDirection(tl.index, i);
+  tl.index = i;
+  markState(travelMarkers, i, tl.visited);
+  $('#card').classList.remove('show');
+  if (tl.year !== MILESTONES[i].year) {
+    $('#year').classList.remove('small');
+    warp.targetSpeed = (reducedMotion ? 1 : 5) * (dir || 1); // negative = towards the present
+    sound.whoosh();
+    if (!(await animateYear(tl.year, MILESTONES[i].year, reducedMotion ? 400 : ms, token))) return false;
+  }
+  if (token !== tl.token || skipAll) return false;
+  showCard(i);
+  return true;
+}
+
+async function autoLoop() {
+  let token = tl.token;
+  while (tl.active && tl.auto && token === tl.token) {
+    if (!(await wait(5200)) || token !== tl.token || !tl.auto) return;
+    const next = nextAuto(tl.index, MILESTONES.length);
+    if (next === null) { finishTravel(); return; }
+    if (!(await goTo(next, 1700))) return;
+    token = tl.token;
+  }
+}
+
+function setAuto(on) {
+  tl.auto = on;
+  $('#btn-continue').hidden = on;
+}
+
+// Timeline marker or arrow key: pause, then fly there in ~1 s (Req 9.2, 9.3)
+function userJump(i) {
+  if (!tl.active) return;
+  setAuto(false);
+  goTo(clampIndex(i, MILESTONES.length), 1000);
+}
+
+function finishTravel() {
+  tl.done?.();
+  tl.done = null;
+}
+
+$('#btn-skip').addEventListener('click', () => { skipAll = true; cancelWait?.(); finishTravel(); });
+$('#btn-continue').addEventListener('click', () => {
+  if (!tl.active) return;
+  setAuto(true);
+  if (tl.index === LAST) finishTravel(); else autoLoop(); // Req 9.3, 9.5
+});
+// Clicking the card moves on, as before (Req 2.5), keeping the current auto/paused mode.
+$('#card').addEventListener('click', async () => {
+  if (!tl.active) return;
+  const next = nextAuto(tl.index, MILESTONES.length);
+  if (next === null) { finishTravel(); return; }
+  if (await goTo(next, tl.auto ? 1700 : 1000) && tl.auto) autoLoop();
+});
+document.addEventListener('keydown', (e) => {
+  if (!tl.active || !$('#credits').hidden) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); userJump(tl.index - 1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); userJump(tl.index + 1); }
+});
+
 async function travel() {
   skipAll = false;
+  Object.assign(tl, { index: 0, visited: new Set(), year: MILESTONES[0].year, active: true });
+  tl.token++;
+  setAuto(true);
+  document.body.classList.add('traveling');
+  $('#year').textContent = MILESTONES[0].year;
+  $('#year').classList.remove('small');
+  markState(travelMarkers, 0, tl.visited);
   await show('travel');
   $('#warp').classList.add('on');
   warp.start();
-  const card = $('#card');
-  const yearEl = $('#year');
-  let year = MILESTONES[0].year;
-  for (const [i, m] of MILESTONES.entries()) {
-    if (skipAll) break;
-    yearEl.classList.remove('small');
-    if (i > 0) {
-      warp.targetSpeed = reducedMotion ? 1 : 5;
-      sound.whoosh();
-      await animateYear(year, m.year, reducedMotion ? 600 : 1700);
-    }
-    year = m.year;
-    if (skipAll) break;
-    warp.targetSpeed = 0.35;
-    yearEl.classList.add('small');
-    sound.bell(i === MILESTONES.length - 1 ? 147 : 220, 0.2);
-    currentMilestone = m;
-    fillCard(m);
-    card.classList.add('show');
-    await skippable(5200); // every milestone has a photo
-    card.classList.remove('show');
-    await sleep(350);
-  }
+  const ended = new Promise((r) => { tl.done = r; });
+  warp.age = 0;
+  showCard(0);
+  autoLoop();
+  await ended;
+  tl.active = false;
+  tl.token++;
+  cancelWait?.();
+  setAuto(true);
   currentMilestone = null;
-  card.classList.remove('show');
-  yearEl.textContent = MILESTONES[MILESTONES.length - 1].year;
+  $('#card').classList.remove('show');
+  $('#year').textContent = MILESTONES[LAST].year;
   warp.targetSpeed = 8;
   sound.whoosh();
   await sleep(skipAll ? 300 : 1100);
   await flash();
   warp.stop();
   $('#warp').classList.remove('on');
+  document.body.classList.remove('traveling');
+}
+
+// ---------- timeline viewer (Req 9.6, 9.7) ----------
+let tlViewer = null;
+function setupTimeline() {
+  tlViewer = new TimelineViewer({
+    milestones: MILESTONES,
+    t: (entry) => t(entry),
+    labelFor: markerLabel,
+    onShow: (i) => { lastMilestoneIndex = i; },
+    els: {
+      dialog: $('#timeline-viewer'), markers: $('#tlv-markers'), era: $('#tlv-era'), text: $('#tlv-text'),
+      img: $('#tlv-img'), caption: $('#tlv-caption'), prev: $('#btn-tlv-prev'), next: $('#btn-tlv-next'), close: $('#btn-tlv-close'),
+    },
+  });
+  $('#btn-timeline').addEventListener('click', (e) => tlViewer.open(lastMilestoneIndex, e.currentTarget));
+  window.__jinciTimeline = { tl, viewer: tlViewer, warp }; // for automated play-tests
 }
 
 // ---------- reveal + puzzle ----------
@@ -386,5 +491,6 @@ $('#btn-start').addEventListener('click', () => {
 });
 
 setupGallery();
+setupTimeline();
 renderTexts();
 $('#scene-title').classList.add('visible');

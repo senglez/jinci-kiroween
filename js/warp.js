@@ -1,6 +1,6 @@
 // First-person "time tunnel": stars stream past the viewer while glowing
 // tree-ring-like circles (annual rings of time) rush toward the camera.
-// `speed` is eased toward `targetSpeed`; `age` (0 = now, 1 = AD 1023) tints the tunnel sepia.
+// `speed` is eased toward `targetSpeed` (negative = flowing backwards, towards the present); `age` (0 = now, 1 = AD 1023) tints the tunnel sepia.
 
 export class Warp {
   constructor(canvas) {
@@ -60,8 +60,8 @@ export class Warp {
 
   draw(dt, t) {
     const { ctx, w, h } = this;
-    const cx = w / 2 + Math.sin(t * 0.7) * w * 0.02 * this.speed;
-    const cy = h / 2 + Math.cos(t * 0.5) * h * 0.02 * this.speed;
+    const cx = w / 2 + Math.sin(t * 0.7) * w * 0.02 * Math.abs(this.speed);
+    const cy = h / 2 + Math.cos(t * 0.5) * h * 0.02 * Math.abs(this.speed);
     const focal = Math.min(w, h) * 0.6;
 
     // background: deep night purple fading to old-paper amber as we go back
@@ -72,7 +72,7 @@ export class Warp {
     g.addColorStop(0, `rgb(${inner})`);
     g.addColorStop(1, `rgb(${outer})`);
     ctx.fillStyle = g;
-    ctx.globalAlpha = 0.55 + 0.4 * (1 - Math.min(1, this.speed / 3)); // leave motion trails at speed
+    ctx.globalAlpha = 0.55 + 0.4 * (1 - Math.min(1, Math.abs(this.speed) / 3)); // leave motion trails at speed
     ctx.fillRect(0, 0, w, h);
     ctx.globalAlpha = 1;
 
@@ -81,6 +81,7 @@ export class Warp {
     for (const ring of this.rings) {
       ring.z -= dt * this.speed * 0.18;
       if (ring.z <= 0.02) { ring.z += 1; ring.seed = Math.random(); }
+      if (ring.z > 1.02) { ring.z -= 1; ring.seed = Math.random(); } // flowing backwards (negative speed)
       const r = focal * 0.35 / ring.z;
       if (r > Math.max(w, h) * 1.4) continue;
       const alpha = Math.min(1, (1 - ring.z) * 1.3) * 0.55;
@@ -98,6 +99,7 @@ export class Warp {
       const pz = s.z;
       s.z -= dt * this.speed * 0.35;
       if (s.z <= 0.01) Object.assign(s, this.spawnStar());
+      if (s.z > 1) Object.assign(s, this.spawnStar(), { z: 0.02 + Math.random() * 0.05 }); // backwards: re-enter from the edge
       const x1 = cx + (s.x / pz) * focal * 0.5;
       const y1 = cy + (s.y / pz) * focal * 0.5;
       const x2 = cx + (s.x / s.z) * focal * 0.5;

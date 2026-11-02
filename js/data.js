@@ -204,6 +204,14 @@ export const UI = {
   close: { zh: '关闭', en: 'Close' },
   sound: { zh: '声音', en: 'Sound' },
 
+  // ---------- timeline (Req 9) ----------
+  timeline: { zh: '时间线', en: 'Timeline' },
+  timelineNow: { zh: '今', en: 'Now' },
+  timelinePast: { zh: '古', en: 'Past' },
+  timelineContinue: { zh: '继续', en: 'Continue' },
+  timelinePrev: { zh: '‹ 更近', en: '‹ Later' },
+  timelineNext: { zh: '更早 ›', en: 'Earlier ›' },
+
   // ---------- 晋祠美景 gallery (spec: jinci-gallery) ----------
   gallery: { zh: '晋祠美景', en: 'Jinci in four seasons' },
   galleryPrev: { zh: '上一张', en: 'Previous photo' },

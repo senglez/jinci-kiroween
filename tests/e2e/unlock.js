@@ -2,7 +2,9 @@ async (page) => {
   // Spec task 10.3 — Requirement 1.1–1.4: one chance per browser, remembered across reloads.
   const ROOT = '/projects/sandbox/repo-jinci';
   const TYPES = { html: 'text/html', js: 'text/javascript', mjs: 'text/javascript', css: 'text/css', json: 'application/json', jpg: 'image/jpeg', png: 'image/png', wasm: 'application/wasm', task: 'application/octet-stream' };
-  await page.unroute('**');
+  const outer = page;
+  page = await outer.context().newPage(); // fresh tab: its own fake clock, no leftovers from other tests
+  await page.bringToFront();
   await page.route('https://jinci.test/**', async (route) => {
     let p = route.request().url().replace('https://jinci.test', '').split('?')[0];
     if (p === '/') p = '/index.html';
@@ -53,7 +55,7 @@ async (page) => {
   await freshBrowser();
   assert(!(await ui()).titleEntrance, 'A: entrance must be hidden before unlocking');
   log.aFast = await playRound();
-  assert(log.aFast.reveal && log.aFast.revealJust, 'A: fast first win must reveal the unlock');
+  assert(log.aFast.reveal && log.aFast.revealJust, 'A: fast first win must reveal the unlock ' + JSON.stringify({ ui: log.aFast, stored: await stored() }));
   assert(log.aFast.titleEntrance, 'A: title entrance should be enabled');
   log.aStored = await stored();
   assert(log.aStored?.unlocked === true && log.aStored.firstCompletionMs < 120000, 'A: stored unlock');
@@ -85,5 +87,6 @@ async (page) => {
   assert(!(await ui()).titleEntrance, 'C: edited record must not unlock');
 
   await page.evaluate(() => localStorage.clear());
+  await page.close();
   return { ok: true, ...log };
 }

@@ -480,3 +480,47 @@ body.bonus #btn-gallery { display: none; } /* never leave the camera running beh
   position: absolute; bottom: -2.2em; white-space: nowrap; font-family: var(--font-title); font-size: 26px;
   color: var(--lantern-2); text-shadow: 0 0 12px rgba(255, 138, 31, .9);
 }
+
+/* ---------- timeline (Req 9) ---------- */
+body.traveling #btn-timeline, body.bonus #btn-timeline,
+body.traveling #btn-gallery { display: none; }
+.tl-bar {
+  position: absolute; top: 64px; left: 50%; transform: translateX(-50%); z-index: 3;
+  width: min(92vw, 860px); display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px; border-radius: 999px; background: rgba(12, 6, 24, .6);
+  border: 1px solid rgba(255, 195, 92, .35); backdrop-filter: blur(4px);
+}
+.tl-bar-static { position: static; transform: none; width: 100%; margin: 4px 0 12px; }
+.tl-end { font-family: var(--font-title); color: var(--lantern-2); font-size: 18px; flex: none; }
+.tl-markers { position: relative; flex: 1; display: flex; justify-content: space-between; }
+.tl-markers::before {
+  content: ''; position: absolute; left: 10px; right: 10px; top: 11px; height: 2px;
+  background: linear-gradient(90deg, rgba(184, 243, 230, .5), rgba(255, 195, 92, .6));
+}
+.tl-marker {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 2px 0; min-width: 24px; background: none; border: 0; color: var(--paper); opacity: .7;
+}
+.tl-marker:hover, .tl-marker:focus-visible { opacity: 1; outline: none; }
+.tl-dot {
+  width: 12px; height: 12px; margin-top: 5px; border-radius: 50%;
+  background: #2a1a40; border: 2px solid rgba(255, 195, 92, .6); transition: transform .2s, background .2s;
+}
+.tl-marker.visited .tl-dot { background: rgba(255, 195, 92, .55); }
+.tl-marker.current { opacity: 1; }
+.tl-marker.current .tl-dot { background: var(--lantern-2); transform: scale(1.5); box-shadow: 0 0 12px var(--lantern); }
+.tl-marker:focus-visible .tl-dot { box-shadow: 0 0 0 3px var(--ghost); }
+.tl-year { font-size: 12px; font-variant-numeric: tabular-nums; }
+.tl-marker.current .tl-year { color: var(--lantern-2); font-weight: 700; }
+.tl-continue { position: absolute; left: 16px; bottom: 16px; font-size: 20px; padding: 8px 22px; }
+.tlv-box { width: min(760px, 100%); }
+.tlv-card { position: static; transform: none; opacity: 1; width: auto; cursor: default; text-align: left; box-shadow: none; }
+.modal-actions button:disabled { opacity: .35; cursor: default; box-shadow: none; }
+@media (max-width: 700px) {
+  .tl-bar { top: 100px; gap: 4px; padding: 4px 8px; }
+  .tl-end { font-size: 14px; }
+  .tl-year { font-size: 9px; }
+  .tl-marker { min-width: 0; }
+}
+/* the calligraphy title font has no ▶ glyph, so draw it with the body font */
+.tl-continue::after { content: '▶'; margin-left: .4em; font-family: var(--font-body); font-size: .7em; vertical-align: .1em; }

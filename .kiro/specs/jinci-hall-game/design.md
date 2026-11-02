@@ -104,3 +104,27 @@ These hold for any content edit and are enforced by `tools/check.mjs`:
 
 - **On save** (Kiro hook `check-on-save`): `node tools/check.mjs` after any `js/*.js` or `index.html` save.
 - **Play-test** (Playwright, headless): start, skip travel, wait for `window.__jinciPuzzle.enabled`, drop the upper roof first (must be rejected and name the upper brackets), then build all 9 in support order and assert the win dialog shows. Run at 1280×800 and 390×844, and resize between them mid-game to check the tray relayout.
+
+## Timeline navigation (Requirement 9)
+
+**Travel controller.** `travel()` is rewritten around a small state machine instead of a fixed loop:
+
+```
+state: { index, visited:Set, auto:boolean, token, done }
+goTo(i, ms)      // token++ ; whoosh ; warp.targetSpeed = ±5 (negative = towards the present) ;
+                 // animateYear(year, MILESTONES[i].year, ms, token) ; if token unchanged → showCard(i)
+autoplay()       // while auto and not done: wait 5.2 s (cancellable) → next or finish
+userJump(i)      // auto = false ; show 继续 ; goTo(i, 1000)
+continue()       // auto = true ; hide 继续 ; at last index → finish, else autoplay from index
+```
+
+Every async step checks `token`, so a newer jump cancels older flights and pending waits (Req 9.4). `animateYear` already derives the tunnel colour from the year, so flying forward or back is symmetric.
+
+**Warp.** `Warp` accepts a negative speed: rings and stars then move away from the viewer and are re-spawned near the centre when they leave the far plane. Only the sign of `targetSpeed` changes.
+
+**Pure helpers** (`js/timeline.js`, tested in Node): `clampIndex(i, n)`, `flightDirection(from, to)` (−1 towards the present, +1 into the past, 0 same), and `nextAuto(index, n)` (next index or `null` at the end).
+
+**Viewer.** `TimelineViewer` in `js/timeline.js` reuses the card markup inside a modal (`#timeline-viewer`). It is opened from `#btn-timeline` (hidden while `body.traveling` or `body.bonus`) and starts at `lastMilestoneIndex` kept by `main.js`.
+
+**Tests.** Properties T1–T2 in `tools/test.mjs` (clamping and direction); `tests/e2e/timeline.js` jumps forward and back during travel, checks pause and 继续, rapid double jumps, the end of travel, and the viewer (open, paging limits, keys, Escape, hidden in bonus mode).
+
